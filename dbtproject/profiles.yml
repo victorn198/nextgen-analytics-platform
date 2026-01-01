@@ -1,0 +1,13 @@
+﻿data_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: UZQPXSP-DG14553
+      user: VICTORN198
+      password: 7M@PQsn$#E!alj
+      role: ACCOUNTADMIN
+      database: ANALYTICS
+      warehouse: COMPUTE_WH
+      schema: STAGING
+      threads: 4
