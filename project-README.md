@@ -60,8 +60,8 @@ SNOWFLAKE_SCHEMA=RAW
 
 ### 4. Run Setup Script
 ```bash
-cd scripts
-python load_sample_data.py
+cd ..
+python scripts/loadsampledata.py
 cd ../dbt_project
 dbt run
 dbt test
@@ -85,7 +85,7 @@ data-pipeline-portfolio/
 │   ├── extract_customers.py     # Simulates customer CRM
 │   └── extract_products.py      # Simulates product catalog
 │
-├── dbt_project/                 # Transformation layer
+├── dbtproject/                 # Transformation layer
 │   ├── models/
 │   │   ├── staging/             # Raw → Cleaned
 │   │   ├── intermediate/        # Business logic
@@ -386,7 +386,7 @@ dbt snapshot               # Create data snapshots
 dbt freshness             # Check source freshness
 
 # Pipeline
-python scripts/load_sample_data.py   # Load test data
+python scripts/loadsampledata.py   # Load test data
 bash scripts/run_pipeline.sh         # Run full pipeline
 ```
 
