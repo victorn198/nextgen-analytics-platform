@@ -4,42 +4,49 @@ from datetime import datetime, timedelta
 import random
 from dotenv import load_dotenv
 
-print('🚀 Carregando dados de exemplo no Snowflake RAW...')
+print('🚀 Loading sample data into Snowflake RAW...')
 
 load_dotenv()
 
+# Connect to Snowflake
+# SNOWFLAKE_ACCOUNT and SNOWFLAKE_DATABASE are hardcoded to avoid .env loading issues.
 conn = snowflake.connector.connect(
-    account=os.getenv('SNOWFLAKE_ACCOUNT'),
+    account='UZMOVYK-JJA45572',
     user=os.getenv('SNOWFLAKE_USER'),
     password=os.getenv('SNOWFLAKE_PASSWORD'),
     warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
-    database=os.getenv('SNOWFLAKE_DATABASE'),
+    database='ANALYTICS',
     schema=os.getenv('SNOWFLAKE_SCHEMA')
 )
 
 cur = conn.cursor()
 
-print('📋 Criando tabelas RAW...')
+cur.execute("USE DATABASE ANALYTICS")
+cur.execute("USE SCHEMA RAW")
+
+print('📋 Creating RAW tables...')
+
+print('📋 Creating RAW tables...')
 cur.execute('CREATE OR REPLACE TABLE RAW.customers_raw (customer_id STRING, customer_name STRING, email STRING, city STRING, state STRING, created_date TIMESTAMP)')
 cur.execute('CREATE OR REPLACE TABLE RAW.products_raw (product_id STRING, product_name STRING, category STRING, unit_price FLOAT, stock_quantity INT)')
 cur.execute('CREATE OR REPLACE TABLE RAW.orders_raw (order_id STRING, customer_id STRING, product_id STRING, order_date TIMESTAMP, quantity INT, unit_price FLOAT, total_amount FLOAT, status STRING)')
 conn.commit()
 
-print('👥 500 clientes...')
+print('👥 Generating 500 customers...')
 for i in range(1, 501):
     cur.execute("INSERT INTO RAW.customers_raw VALUES (%s, %s, %s, %s, %s, %s)", 
-                (f'CUST_{i:04d}', f'Cliente {i}', f'cliente{i}@exemplo.com', 
+                (f'CUST_{i:04d}', f'Customer {i}', f'customer{i}@example.com', 
                  random.choice(['SP','RJ','BH','POA','CUR']), 
                  random.choice(['SP','RJ','MG','RS','PR']), datetime.now()))
 
-print('📦 100 produtos...')
+print('📦 Generating 100 products...')
 for i in range(1, 101):
     cur.execute("INSERT INTO RAW.products_raw VALUES (%s, %s, %s, %s, %s)", 
-                (f'PROD_{i:04d}', f'Produto {i}', 
-                 random.choice(['Eletrônicos','Roupas','Casa']), 
+                (f'PROD_{i:04d}', f'Product {i}', 
+                 random.choice(['Electronics','Apparel','Home Goods']), 
                  round(random.uniform(10.0,500.0),2), random.randint(0,100)))
 
-print('🛒 1000 pedidos...')
+print('🛒 Generating 1000 orders...')
 customer_ids = [f'CUST_{i:04d}' for i in range(1,501)]
 product_ids = [f'PROD_{i:04d}' for i in range(1,101)]
 base_date = datetime(2025,1,1)
@@ -54,10 +61,12 @@ for i in range(1000):
 
 conn.commit()
 
-cur.execute('SELECT COUNT(*) FROM RAW.orders_raw'); print(f'📋 Pedidos: {cur.fetchone()[0]}')
-cur.execute('SELECT COUNT(*) FROM RAW.customers_raw'); print(f'👥 Clientes: {cur.fetchone()[0]}')
-cur.execute('SELECT COUNT(*) FROM RAW.products_raw'); print(f'📦 Produtos: {cur.fetchone()[0]}')
-print('🎉 Dados RAW prontos para dbt!')
+# Verification
+cur.execute('SELECT COUNT(*) FROM RAW.orders_raw'); print(f'   📋 Orders: {cur.fetchone()[0]}')
+cur.execute('SELECT COUNT(*) FROM RAW.customers_raw'); print(f'   👥 Customers: {cur.fetchone()[0]}')
+cur.execute('SELECT COUNT(*) FROM RAW.products_raw'); print(f'   📦 Products: {cur.fetchone()[0]}')
+print('✅ LOAD COMPLETE!')
+print('🎉 RAW data is ready for dbt!')
 
 cur.close()
 conn.close()
