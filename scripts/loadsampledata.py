@@ -1,115 +1,91 @@
 ﻿import os
-import random
-from datetime import datetime, timedelta
 
 import snowflake.connector
 from dotenv import load_dotenv
 
-print("🚀 Loading sample data into Snowflake RAW...")
+# Import the modularized loading functions
+from fivetran_simulator.extract_customers import load_customers
+from fivetran_simulator.extract_orders import load_orders
+from fivetran_simulator.extract_products import load_products
 
-load_dotenv()
+def main():
+    """
+    Main function to orchestrate the data loading process.
+    - Connects to Snowflake.
+    - Cleans old data.
+    - Creates tables.
+    - Loads new data using modular functions.
+    - Verifies the loaded data.
+    """
+    load_dotenv()
+    print("🚀 Starting full sample data load into Snowflake RAW schema...")
 
-# Conecta ao Snowflake usando os valores que funcionaram
-conn = snowflake.connector.connect(
-    account="UZMOVYK-JJA45572",
-    user=os.getenv("SNOWFLAKE_USER"),
-    password=os.getenv("SNOWFLAKE_PASSWORD"),
-    warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
-    database="ANALYTICS",
-    schema=os.getenv("SNOWFLAKE_SCHEMA"),
-)
-
-cur = conn.cursor()
-
-# Apaga os dados antigos para garantir que a carga seja limpa
-print("🧹 Cleaning old data...")
-cur.execute("DELETE FROM RAW.CUSTOMERS_RAW;")
-cur.execute("DELETE FROM RAW.PRODUCTS_RAW;")
-cur.execute("DELETE FROM RAW.ORDERS_RAW;")
-conn.commit()
-
-print("📋 Creating RAW tables...")
-cur.execute(
-    "CREATE OR REPLACE TABLE RAW.customers_raw (customer_id STRING, customer_name STRING, email STRING, city STRING, state STRING, created_date TIMESTAMP)"
-)
-cur.execute(
-    "CREATE OR REPLACE TABLE RAW.products_raw (product_id STRING, product_name STRING, category STRING, unit_price FLOAT, stock_quantity INT)"
-)
-cur.execute(
-    "CREATE OR REPLACE TABLE RAW.orders_raw (order_id STRING, customer_id STRING, product_id STRING, order_date TIMESTAMP, quantity INT, unit_price FLOAT, total_amount FLOAT, status STRING)"
-)
-conn.commit()
-
-print("👥 Generating 500 customers...")
-customers_data = []
-for i in range(1, 501):
-    customers_data.append(
-        (
-            f"CUST_{i:04d}",
-            f"Customer {i}",
-            f"customer{i}@example.com",
-            random.choice(["SP", "RJ", "BH", "POA", "CUR"]),
-            random.choice(["SP", "RJ", "MG", "RS", "PR"]),
-            datetime.now(),
+    conn = None  # Initialize conn to None
+    try:
+        conn = snowflake.connector.connect(
+            account=os.getenv("SNOWFLAKE_ACCOUNT"),
+            user=os.getenv("SNOWFLAKE_USER"),
+            password=os.getenv("SNOWFLAKE_PASSWORD"),
+            warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
+            database=os.getenv("SNOWFLAKE_DATABASE"),
+            schema=os.getenv("SNOWFLAKE_SCHEMA"),
         )
-    )
-cur.executemany(
-    "INSERT INTO RAW.customers_raw VALUES (%s, %s, %s, %s, %s, %s)", customers_data
-)
+        print("✅ Snowflake connection successful.")
 
+        cur = conn.cursor()
 
-print("📦 Generating 100 products...")
-products_data = []
-for i in range(1, 101):
-    products_data.append(
-        (
-            f"PROD_{i:04d}",
-            f"Product {i}",
-            random.choice(["Electronics", "Apparel", "Home Goods"]),
-            round(random.uniform(10.0, 500.0), 2),
-            random.randint(0, 100),
+        # 1. Clean old data
+        print("\n🧹 Cleaning old data from RAW tables...")
+        cur.execute("DELETE FROM RAW.CUSTOMERS_RAW;")
+        cur.execute("DELETE FROM RAW.PRODUCTS_RAW;")
+        cur.execute("DELETE FROM RAW.ORDERS_RAW;")
+        conn.commit()
+        print("✅ Old data cleaned successfully.")
+
+        # 2. (Optional but good practice) Re-create tables to ensure schema is correct
+        print("\n📋 Re-creating RAW tables for a clean slate...")
+        cur.execute(
+            "CREATE OR REPLACE TABLE RAW.customers_raw (customer_id STRING, customer_name STRING, email STRING, city STRING, state STRING, created_date TIMESTAMP)"
         )
-    )
-cur.executemany(
-    "INSERT INTO RAW.products_raw VALUES (%s, %s, %s, %s, %s)", products_data
-)
-
-
-print("🛒 Generating 1000 orders...")
-customer_ids = [f"CUST_{i:04d}" for i in range(1, 501)]
-product_ids = [f"PROD_{i:04d}" for i in range(1, 101)]
-base_date = datetime(2025, 1, 1)
-orders_data = []
-for i in range(1000):
-    quantity = random.randint(1, 5)
-    unit_price = 99.99
-    orders_data.append(
-        (
-            f"ORD_{i + 1:06d}",
-            random.choice(customer_ids),
-            random.choice(product_ids),
-            base_date + timedelta(days=random.randint(0, 365)),
-            quantity,
-            unit_price,
-            round(quantity * unit_price, 2),
-            random.choice(["completed", "pending", "cancelled"]),
+        cur.execute(
+            "CREATE OR REPLACE TABLE RAW.products_raw (product_id STRING, product_name STRING, category STRING, unit_price FLOAT, stock_quantity INT)"
         )
-    )
-cur.executemany(
-    "INSERT INTO RAW.orders_raw VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", orders_data
-)
+        cur.execute(
+            "CREATE OR REPLACE TABLE RAW.orders_raw (order_id STRING, customer_id STRING, product_id STRING, order_date TIMESTAMP, quantity INT, unit_price FLOAT, total_amount FLOAT, status STRING)"
+        )
+        conn.commit()
+        print("✅ Tables re-created successfully.")
 
-conn.commit()
+        cur.close()
 
-# Verification
-cur.execute("SELECT COUNT(*) FROM RAW.orders_raw")
-print(f"   📋 Orders: {cur.fetchone()[0]}")
-cur.execute("SELECT COUNT(*) FROM RAW.customers_raw")
-print(f"   👥 Customers: {cur.fetchone()[0]}")
-cur.execute("SELECT COUNT(*) FROM RAW.products_raw")
-print(f"   📦 Products: {cur.fetchone()[0]}")
-print("✅ LOAD COMPLETE!")
-print("🎉 RAW data is ready for dbt!")
+        # 3. Load new data using modular functions
+        print("\n🚛 Loading new sample data...")
+        load_customers(conn)
+        load_products(conn)
+        load_orders(conn)
 
-cur.close()
-conn.close()
+        # 4. Final verification
+        print("\n🔍 Verifying final counts...")
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM RAW.customers_raw")
+        print(f"   - Customers: {cur.fetchone()[0]}")
+        cur.execute("SELECT COUNT(*) FROM RAW.products_raw")
+        print(f"   - Products: {cur.fetchone()[0]}")
+        cur.execute("SELECT COUNT(*) FROM RAW.orders_raw")
+        print(f"   - Orders: {cur.fetchone()[0]}")
+        cur.close()
+
+        print("\n🎉 LOAD COMPLETE! RAW data is ready for dbt! 🎉")
+
+    except Exception as e:
+        print(f"\n❌ An error occurred: {e}")
+    finally:
+        if conn:
+            conn.close()
+            print("\nSnowflake connection closed.")
+
+            conn.close()
+            print("\nSnowflake connection closed.")
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,68 @@
+name: dbt Core CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dbt_run:
+    name: Run dbt models and tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Setup dbt profiles
+        env:
+          SNOWFLAKE_ACCOUNT: ${% raw %}{{ secrets.SNOWFLAKE_ACCOUNT }}{% endraw %}
+          SNOWFLAKE_USER: ${% raw %}{{ secrets.SNOWFLAKE_USER }}{% endraw %}
+          SNOWFLAKE_PASSWORD: ${% raw %}{{ secrets.SNOWFLAKE_PASSWORD }}{% endraw %}
+          SNOWFLAKE_WAREHOUSE: ${% raw %}{{ secrets.SNOWFLAKE_WAREHOUSE }}{% endraw %}
+          SNOWFLAKE_DATABASE: ${% raw %}{{ secrets.SNOWFLAKE_DATABASE }}{% endraw %}
+          SNOWFLAKE_SCHEMA: ${% raw %}{{ secrets.SNOWFLAKE_SCHEMA }}{% endraw %}
+        run: |
+          mkdir -p ~/.dbt/
+          echo "config:" > ~/.dbt/profiles.yml
+          echo "  send_anonymous_usage_stats: False" >> ~/.dbt/profiles.yml
+          echo "" >> ~/.dbt/profiles.yml
+          echo "data_pipeline:" >> ~/.dbt/profiles.yml
+          echo "  target: dev" >> ~/.dbt/profiles.yml
+          echo "  outputs:" >> ~/.dbt/profiles.yml
+          echo "    dev:" >> ~/.dbt/profiles.yml
+          echo "      type: snowflake" >> ~/.dbt/profiles.yml
+          echo "      account: $SNOWFLAKE_ACCOUNT" >> ~/.dbt/profiles.yml
+          echo "      user: $SNOWFLAKE_USER" >> ~/.dbt/profiles.yml
+          echo "      password: $SNOWFLAKE_PASSWORD" >> ~/.dbt/profiles.yml
+          echo "      role: ACCOUNTADMIN" >> ~/.dbt/profiles.yml
+          echo "      database: $SNOWFLAKE_DATABASE" >> ~/.dbt/profiles.yml
+          echo "      warehouse: $SNOWFLAKE_WAREHOUSE" >> ~/.dbt/profiles.yml
+          echo "      schema: $SNOWFLAKE_SCHEMA" >> ~/.dbt/profiles.yml
+          echo "      threads: 4" >> ~/.dbt/profiles.yml
+          echo "      client_session_keep_alive: False" >> ~/.dbt/profiles.yml
+
+      - name: Run dbt deps
+        run: dbt deps
+        working-directory: ./dbtproject
+
+      - name: Run dbt models
+        run: dbt run
+        working-directory: ./dbtproject
+
+      - name: Run dbt tests
+        run: dbt test
+        working-directory: ./dbtproject
