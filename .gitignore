@@ -18,3 +18,7 @@ auth_key.p8
 .env*
 !/.env.example
 dbtproject/logs/
+
+# Project files
+RUNBOOK.md
+script_uvicorn.txt
