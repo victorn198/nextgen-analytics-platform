@@ -29,6 +29,29 @@ sources:
           - name: PRODUCT_ID
             tests: [not_null]
 
+  - name: snapshots_native
+    description: Native Snowflake SCD2 snapshots managed by Snowflake Tasks/Procedures.
+    database: ANALYTICS
+    schema: SNAPSHOTS
+
+    tables:
+      - name: CUSTOMERS_SCD2
+        description: Customer SCD2 history table managed in Snowflake.
+        columns:
+          - name: CUSTOMER_ID
+            tests: [not_null]
+          - name: VALID_FROM
+            tests: [not_null]
+          - name: IS_CURRENT
+            tests: [not_null]
+
+      - name: CUSTOMERS_SCD2_CURRENT
+        identifier: VW_CUSTOMERS_SCD2_CURRENT
+        description: Current-state customer view from SCD2 table.
+        columns:
+          - name: CUSTOMER_ID
+            tests: [not_null]
+
 models:
   - name: stg_orders
     description: Standardized orders from RAW. Applies typing/renames and keeps a 1:1 shape with the source.
@@ -49,13 +72,21 @@ models:
         description: Order status from the source system.
         tests:
           - accepted_values:
-              values: ["pending", "paid", "cancelled", "shipped", "completed"]
+              arguments:
+                values: ["pending", "paid", "cancelled", "shipped", "completed"]
 
   - name: stg_customers
     description: Standardized customers from RAW.
     columns:
       - name: customer_id
         description: Business identifier of the customer.
+        tests: [unique, not_null]
+
+  - name: stg_customers_snapshot_current
+    description: Current customer state from native Snowflake SCD2 snapshot.
+    columns:
+      - name: customer_id
+        description: Business identifier of the current customer state.
         tests: [unique, not_null]
 
   - name: stg_products

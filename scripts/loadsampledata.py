@@ -1,26 +1,73 @@
 ﻿import os
+import sys
+import argparse
+from pathlib import Path
 
 import snowflake.connector
 from dotenv import load_dotenv
 
-# Import the modularized loading functions
+# Ensure local package imports work when running from scripts/ path.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from fivetran_simulator.extract_customers import load_customers
 from fivetran_simulator.extract_orders import load_orders
 from fivetran_simulator.extract_products import load_products
 
+
+def _ensure_raw_tables(cur):
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS RAW.customers_raw (customer_id STRING, customer_name STRING, email STRING, city STRING, state STRING, created_date TIMESTAMP)"
+    )
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS RAW.products_raw (product_id STRING, product_name STRING, category STRING, unit_price FLOAT, stock_quantity INT)"
+    )
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS RAW.orders_raw (order_id STRING, customer_id STRING, product_id STRING, order_date TIMESTAMP, quantity INT, unit_price FLOAT, total_amount FLOAT, status STRING)"
+    )
+
+
+def _truncate_raw_tables(cur):
+    cur.execute("TRUNCATE TABLE RAW.orders_raw")
+    cur.execute("TRUNCATE TABLE RAW.products_raw")
+    cur.execute("TRUNCATE TABLE RAW.customers_raw")
+
+
+def _resolve_mode(explicit_mode):
+    if explicit_mode:
+        return explicit_mode
+    return os.getenv("PIPELINE_LOAD_MODE", "incremental").strip().lower()
+
+
 def main():
     """
-    Main function to orchestrate the data loading process.
-    - Connects to Snowflake.
-    - Cleans old data.
-    - Creates tables.
-    - Loads new data using modular functions.
-    - Verifies the loaded data.
+    Orchestrates RAW load:
+    - Connect to Snowflake
+    - Ensure RAW tables exist
+    - Optionally truncate RAW tables (full refresh mode)
+    - Fetch data from Fake Store API and load into RAW (incremental by default)
+    - Verify final counts
     """
-    load_dotenv()
-    print("🚀 Starting full sample data load into Snowflake RAW schema...")
+    parser = argparse.ArgumentParser(description="Load Fake Store data into Snowflake RAW")
+    parser.add_argument(
+        "--mode",
+        choices=["incremental", "full_refresh"],
+        default=None,
+        help="Load mode. Defaults to PIPELINE_LOAD_MODE env var or incremental.",
+    )
+    args = parser.parse_args()
 
-    conn = None  # Initialize conn to None
+    load_dotenv()
+    load_mode = _resolve_mode(args.mode)
+    if load_mode not in {"incremental", "full_refresh"}:
+        raise ValueError(
+            "Invalid load mode. Use 'incremental' or 'full_refresh' via --mode or PIPELINE_LOAD_MODE."
+        )
+
+    print(f"Starting API-based load into Snowflake RAW schema (mode={load_mode})...")
+
+    conn = None
     try:
         conn = snowflake.connector.connect(
             account=os.getenv("SNOWFLAKE_ACCOUNT"),
@@ -30,62 +77,48 @@ def main():
             database=os.getenv("SNOWFLAKE_DATABASE"),
             schema=os.getenv("SNOWFLAKE_SCHEMA"),
         )
-        print("✅ Snowflake connection successful.")
+        print("Snowflake connection successful.")
 
         cur = conn.cursor()
-
-        # 1. Clean old data
-        print("\n🧹 Cleaning old data from RAW tables...")
-        cur.execute("DELETE FROM RAW.CUSTOMERS_RAW;")
-        cur.execute("DELETE FROM RAW.PRODUCTS_RAW;")
-        cur.execute("DELETE FROM RAW.ORDERS_RAW;")
+        _ensure_raw_tables(cur)
         conn.commit()
-        print("✅ Old data cleaned successfully.")
 
-        # 2. (Optional but good practice) Re-create tables to ensure schema is correct
-        print("\n📋 Re-creating RAW tables for a clean slate...")
-        cur.execute(
-            "CREATE OR REPLACE TABLE RAW.customers_raw (customer_id STRING, customer_name STRING, email STRING, city STRING, state STRING, created_date TIMESTAMP)"
-        )
-        cur.execute(
-            "CREATE OR REPLACE TABLE RAW.products_raw (product_id STRING, product_name STRING, category STRING, unit_price FLOAT, stock_quantity INT)"
-        )
-        cur.execute(
-            "CREATE OR REPLACE TABLE RAW.orders_raw (order_id STRING, customer_id STRING, product_id STRING, order_date TIMESTAMP, quantity INT, unit_price FLOAT, total_amount FLOAT, status STRING)"
-        )
-        conn.commit()
-        print("✅ Tables re-created successfully.")
+        if load_mode == "full_refresh":
+            print("Applying full refresh: truncating RAW tables...")
+            _truncate_raw_tables(cur)
+            conn.commit()
+            print("RAW tables truncated.")
+        else:
+            print("Incremental mode: keeping existing RAW data.")
 
         cur.close()
+        print("RAW tables ready for load.")
 
-        # 3. Load new data using modular functions
-        print("\n🚛 Loading new sample data...")
+        print("Loading data from Fake Store API...")
         load_customers(conn)
         load_products(conn)
         load_orders(conn)
 
-        # 4. Final verification
-        print("\n🔍 Verifying final counts...")
+        print("Verifying final counts...")
         cur = conn.cursor()
         cur.execute("SELECT COUNT(*) FROM RAW.customers_raw")
-        print(f"   - Customers: {cur.fetchone()[0]}")
+        print(f"Customers: {cur.fetchone()[0]}")
         cur.execute("SELECT COUNT(*) FROM RAW.products_raw")
-        print(f"   - Products: {cur.fetchone()[0]}")
+        print(f"Products: {cur.fetchone()[0]}")
         cur.execute("SELECT COUNT(*) FROM RAW.orders_raw")
-        print(f"   - Orders: {cur.fetchone()[0]}")
+        print(f"Orders: {cur.fetchone()[0]}")
         cur.close()
 
-        print("\n🎉 LOAD COMPLETE! RAW data is ready for dbt! 🎉")
+        print("Load complete. RAW data is ready for dbt.")
 
-    except Exception as e:
-        print(f"\n❌ An error occurred: {e}")
+    except Exception as exc:
+        print(f"Load failed: {exc}")
+        raise
     finally:
         if conn:
             conn.close()
-            print("\nSnowflake connection closed.")
+            print("Snowflake connection closed.")
 
-            conn.close()
-            print("\nSnowflake connection closed.")
 
 if __name__ == "__main__":
     main()

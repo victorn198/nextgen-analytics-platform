@@ -1,35 +1,35 @@
-# README.md - Data Pipeline Portfolio Project
+﻿# README.md - Data Pipeline Portfolio Project
 
-## 🎯 Project: End-to-End Data Engineering Pipeline
+## ðŸŽ¯ Project: End-to-End Data Engineering Pipeline
 
 A **production-ready, end-to-end data engineering project** demonstrating modern data stack best practices with Snowflake, dbt, Fivetran (simulated), Power BI, and MCP integration.
 
-**Perfect for showcasing your data engineering skills to future employers! 📊**
+**Perfect for showcasing your data engineering skills to future employers! ðŸ“Š**
 
 ---
 
-## 🏗️ Architecture Overview
+## ðŸ—ï¸ Architecture Overview
 
 ```
 Data Sources (APIs) 
-    ↓
-Python Extraction (Fivetran simulator)
-    ↓
+    â†“
+Python Extraction (Fake Store API connector)
+    â†“
 Snowflake RAW Layer (Landing Zone)
-    ↓
+    â†“
 dbt Transformations
-    ├─ STAGING (Cleaning)
-    ├─ INTERMEDIATE (Business Logic)
-    └─ MARTS (Analytics Ready)
-    ↓
+    â”œâ”€ STAGING (Cleaning)
+    â”œâ”€ INTERMEDIATE (Business Logic)
+    â””â”€ MARTS (Analytics Ready)
+    â†“
 Power BI Dashboards + Analytics
-    ↓
+    â†“
 MCP + Gemini CLI (AI Insights)
 ```
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## ðŸš€ Quick Start (5 Minutes)
 
 ### 1. Prerequisites
 ```bash
@@ -75,56 +75,56 @@ dbt docs serve  # Opens interactive documentation
 
 ---
 
-## 📁 Project Structure
+## ðŸ“ Project Structure
 
 ```
 data-pipeline-portfolio/
-│
-├── fivetran_simulator/          # Data extraction layer
-│   ├── extract_orders.py        # Simulates orders API
-│   ├── extract_customers.py     # Simulates customer CRM
-│   └── extract_products.py      # Simulates product catalog
-│
-├── dbtproject/                 # Transformation layer
-│   ├── models/
-│   │   ├── staging/             # Raw → Cleaned
-│   │   ├── intermediate/        # Business logic
-│   │   └── marts/               # Analytics tables
-│   ├── tests/                   # Data quality tests
-│   └── macros/                  # Reusable components
-│
-├── mcp_tools/                   # AI Integration
-│   ├── data_analyzer.py         # MCP server for insights
-│   └── mcp_server_config.json   # Configuration
-│
-├── scripts/
-│   ├── setup_snowflake.sql      # DDL scripts
-│   ├── load_sample_data.py      # Sample data loader
-│   └── run_pipeline.sh          # Full pipeline runner
-│
-├── docs/                        # Documentation
-│   ├── ARCHITECTURE.md
-│   ├── DBT_MODELS.md
-│   └── DATA_LINEAGE.md
-│
-├── .github/workflows/
-│   └── dbt_run.yml             # CI/CD automation
-│
-└── power_bi/
-    └── sales_dashboard.pbix    # BI Visualization
+â”‚
+â”œâ”€â”€ fivetran_simulator/          # Data extraction layer
+â”‚   â”œâ”€â”€ extract_orders.py        # Simulates orders API
+â”‚   â”œâ”€â”€ extract_customers.py     # Simulates customer CRM
+â”‚   â””â”€â”€ extract_products.py      # Simulates product catalog
+â”‚
+â”œâ”€â”€ dbtproject/                 # Transformation layer
+â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â”œâ”€â”€ staging/             # Raw â†’ Cleaned
+â”‚   â”‚   â”œâ”€â”€ intermediate/        # Business logic
+â”‚   â”‚   â””â”€â”€ marts/               # Analytics tables
+â”‚   â”œâ”€â”€ tests/                   # Data quality tests
+â”‚   â””â”€â”€ macros/                  # Reusable components
+â”‚
+â”œâ”€â”€ mcp_tools/                   # AI Integration
+â”‚   â”œâ”€â”€ data_analyzer.py         # MCP server for insights
+â”‚   â””â”€â”€ mcp_server_config.json   # Configuration
+â”‚
+â”œâ”€â”€ scripts/
+â”‚   â”œâ”€â”€ setup_snowflake.sql      # DDL scripts
+â”‚   â”œâ”€â”€ load_sample_data.py      # Sample data loader
+â”‚   â””â”€â”€ run_pipeline.sh          # Full pipeline runner
+â”‚
+â”œâ”€â”€ docs/                        # Documentation
+â”‚   â”œâ”€â”€ ARCHITECTURE.md
+â”‚   â”œâ”€â”€ DBT_MODELS.md
+â”‚   â””â”€â”€ DATA_LINEAGE.md
+â”‚
+â”œâ”€â”€ .github/workflows/
+â”‚   â””â”€â”€ dbt_run.yml             # CI/CD automation
+â”‚
+â””â”€â”€ power_bi/
+    â””â”€â”€ sales_dashboard.pbix    # BI Visualization
 ```
 
 ---
 
-## 🔄 Data Pipeline Stages
+## ðŸ”„ Data Pipeline Stages
 
-### Stage 1: EXTRACT (Fivetran Simulator)
+### Stage 1: EXTRACT (Fake Store API Connector)
 Extract data from multiple sources:
 - **Orders API**: Transaction data
 - **Customer CRM**: Customer information
 - **Product Catalog**: Product master data
 
-**Files**: `fivetran_simulator/*.py`
+**Files**: `fivetran_simulator/*.py` (`extract_customers.py`, `extract_products.py`, `extract_orders.py`) now call the Fake Store API.
 
 ```python
 # Example: extract_orders.py
@@ -255,10 +255,10 @@ Connect Power BI to Snowflake MARTS schema:
 - **dim_date**: Date dimension
 
 **Dashboards**:
-- 📈 Sales Overview
-- 💰 Revenue Trends
-- 👥 Customer Segmentation
-- 🎯 Product Performance
+- ðŸ“ˆ Sales Overview
+- ðŸ’° Revenue Trends
+- ðŸ‘¥ Customer Segmentation
+- ðŸŽ¯ Product Performance
 
 ---
 
@@ -272,7 +272,7 @@ gemini-cli --mcp data_analyzer \
 
 ---
 
-## 🧪 Testing & Quality
+## ðŸ§ª Testing & Quality
 
 ### dbt Tests
 ```bash
@@ -297,7 +297,7 @@ pytest tests/test_extraction.py -v
 
 ---
 
-## 📊 Performance Optimization
+## ðŸ“Š Performance Optimization
 
 ### dbt Materializations
 - **View**: Staging layer (not materialized)
@@ -320,17 +320,17 @@ pytest tests/test_extraction.py -v
 
 ---
 
-## 🔐 Security & Governance
+## ðŸ” Security & Governance
 
-✅ **Version Control**: All code in GitHub  
-✅ **Access Control**: Row-level security via dbt  
-✅ **Data Lineage**: dbt provides full lineage  
-✅ **Audit Trail**: Fivetran tracks data freshness  
-✅ **Testing**: Automated data quality checks  
+âœ… **Version Control**: All code in GitHub  
+âœ… **Access Control**: Row-level security via dbt  
+âœ… **Data Lineage**: dbt provides full lineage  
+âœ… **Audit Trail**: Fivetran tracks data freshness  
+âœ… **Testing**: Automated data quality checks  
 
 ---
 
-## 🚀 Deployment
+## ðŸš€ Deployment
 
 ### Local Development
 ```bash
@@ -343,13 +343,13 @@ dbt run --target prod
 ```
 
 ### CI/CD (GitHub Actions)
-Push to GitHub → Automatic dbt testing → Approval → Deploy to production
+Push to GitHub â†’ Automatic dbt testing â†’ Approval â†’ Deploy to production
 
 See `.github/workflows/dbt_run.yml`
 
 ---
 
-## 📚 Documentation
+## ðŸ“š Documentation
 
 - **ARCHITECTURE.md**: System design & decisions
 - **DBT_MODELS.md**: Data model documentation
@@ -364,7 +364,7 @@ dbt docs serve
 
 ---
 
-## 🛠️ Common Commands
+## ðŸ› ï¸ Common Commands
 
 ```bash
 # Development
@@ -392,19 +392,19 @@ bash scripts/run_pipeline.sh         # Run full pipeline
 
 ---
 
-## 💡 Key Features
+## ðŸ’¡ Key Features
 
-✅ **Production-Ready**: Error handling, logging  
-✅ **Scalable**: Easy to add new sources  
-✅ **Tested**: dbt tests + Python tests  
-✅ **Documented**: Clear lineage & docs  
-✅ **CI/CD**: GitHub Actions automation  
-✅ **Modular**: Staging → Intermediate → Marts  
-✅ **Portfolio-Quality**: Professional structure  
+âœ… **Production-Ready**: Error handling, logging  
+âœ… **Scalable**: Easy to add new sources  
+âœ… **Tested**: dbt tests + Python tests  
+âœ… **Documented**: Clear lineage & docs  
+âœ… **CI/CD**: GitHub Actions automation  
+âœ… **Modular**: Staging â†’ Intermediate â†’ Marts  
+âœ… **Portfolio-Quality**: Professional structure  
 
 ---
 
-## 🎓 Learning Resources
+## ðŸŽ“ Learning Resources
 
 - [dbt Documentation](https://docs.getdbt.com/)
 - [Snowflake University](https://university.snowflake.com/)
@@ -413,7 +413,7 @@ bash scripts/run_pipeline.sh         # Run full pipeline
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 - Issues: GitHub Issues
 - Questions: Check discussions
@@ -421,20 +421,21 @@ bash scripts/run_pipeline.sh         # Run full pipeline
 
 ---
 
-## 📄 License
+## ðŸ“„ License
 
 MIT License - Feel free to use for portfolio purposes
 
 ---
 
-## 🎯 Next Steps
+## ðŸŽ¯ Next Steps
 
-1. ✅ Clone repository
-2. ✅ Setup Snowflake connection
-3. ✅ Run `dbt run` and `dbt test`
-4. ✅ Connect Power BI dashboard
-5. ✅ Explore dbt docs
-6. ✅ Create GitHub repo for your portfolio
-7. ✅ Share with potential employers!
+1. âœ… Clone repository
+2. âœ… Setup Snowflake connection
+3. âœ… Run `dbt run` and `dbt test`
+4. âœ… Connect Power BI dashboard
+5. âœ… Explore dbt docs
+6. âœ… Create GitHub repo for your portfolio
+7. âœ… Share with potential employers!
 
-**Happy data engineering! 🚀**
+**Happy data engineering! ðŸš€**
+

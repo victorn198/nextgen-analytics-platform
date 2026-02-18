@@ -1,8 +1,8 @@
-﻿name: 'data_pipeline'
-version: '1.0.0'
+﻿name: "data_pipeline"
+version: "1.0.0"
 config-version: 2
 
-profile: 'data_pipeline'
+profile: "data_pipeline"
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -16,9 +16,16 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
+flags:
+  send_anonymous_usage_stats: false
+
 models:
   data_pipeline:
     staging:
       +materialized: view
+      +schema: STAGING
+    intermediate:
+      +schema: INTERMEDIATE
     marts:
       +materialized: table
+      +schema: MARTS

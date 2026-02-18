@@ -22,3 +22,8 @@ dbtproject/logs/
 # Project files
 RUNBOOK.md
 script_uvicorn.txt
+
+# Power BI (WIP - keep out of git until dashboard is finalized)
+power_bi/
+*.pbix
+*.pbit
