@@ -1,0 +1,83 @@
+﻿version: 1
+pages:
+  sales:
+    label: Sales Overview
+    subtitle: Topline revenue, order volume and category concentration across the selected slice.
+    trend_title_template: Sales Amount
+    trend_x_title: Period
+    current_trace_style: bar
+    previous_trace_style: line
+    cards: [sales_amount, orders_count, average_ticket, avg_items_per_order]
+    primary_trend_metric: sales_amount
+    allowed_actions: [drilldown, compare_previous_period, change_granularity]
+    insight_note: Cards compare the selected window against the immediately previous window of the same length.
+    interaction_hint: Click any period in Sales to open the aligned day-by-day comparison for that selected window.
+  revenue:
+    label: Revenue Trends
+    subtitle: Revenue run-rate, anomaly signals and overall trajectory across the selected slice.
+    trend_title_template: Revenue Trend
+    trend_x_title: Period
+    current_trace_style: line
+    previous_trace_style: line
+    cards: [revenue_in_window, revenue_run_rate, average_ticket, latest_period_sales]
+    primary_trend_metric: sales_amount
+    allowed_actions: [compare_previous_period, change_granularity]
+    insight_note: Revenue cards stay inside the selected date range; anomaly markers use a robust trailing baseline rather than simple previous-period comparison.
+  predictive:
+    label: Predictive Outlook
+    subtitle: Forward-looking revenue baseline, next-month drivers and business watchlist across the selected slice.
+    trend_title_template: Monthly Revenue Forecast
+    trend_x_title: Month
+    current_trace_style: line
+    previous_trace_style: line
+    cards: [next_month_revenue_forecast, next_month_orders_forecast, next_month_active_customers_forecast, revenue_at_risk]
+    primary_trend_metric: monthly_revenue_forecast
+    allowed_actions: [review_forecast_range, inspect_driver_watchlist, focus_next_actions]
+    insight_note: Forecasts use Holt linear smoothing on monthly history inside the selected window. Use them as directional planning baselines, not booking targets.
+    interaction_hint: Click any forecast driver category to inspect the products expected to matter most next month.
+  customers:
+    label: Customer Segmentation
+    subtitle: Customer base size, retention quality and RFM value segmentation across the selected slice.
+    trend_title_template: Active Customers
+    trend_x_title: Period
+    current_trace_style: bar
+    previous_trace_style: line
+    cards: [active_customers, repeat_rate, returning_customers, new_customers, orders_per_customer, revenue_per_customer]
+    primary_trend_metric: active_customers
+    allowed_actions: [compare_previous_period, change_granularity]
+    insight_note: New Customers uses each customer's first-ever purchase date, not first purchase inside the filtered slice.
+  retention:
+    label: Retention Cohorts
+    subtitle: Monthly acquisition cohorts show how customer return behavior evolves after the first purchase inside the selected slice.
+    trend_title_template: Retention Cohort Heatmap
+    trend_x_title: Months Since Acquisition
+    current_trace_style: line
+    previous_trace_style: line
+    cards: [latest_full_cohort_size, retention_m1, retention_m2, retention_m3]
+    primary_trend_metric: retention_m1
+    allowed_actions: [compare_previous_period]
+    insight_note: The cohort matrix is fixed to monthly cohorts; use it to separate acquisition volume from post-acquisition retention quality.
+    interaction_hint: Retention uses monthly cohorts, so the Trend View control is hidden on this page.
+  products:
+    label: Product Performance
+    subtitle: Assortment breadth, Pareto concentration and product mix risk across the selected slice.
+    trend_title_template: Top Category Share
+    trend_x_title: Period
+    current_trace_style: line
+    previous_trace_style: line
+    cards: [products_sold, avg_unit_price, top_5_products_share, top_category_share]
+    primary_trend_metric: top_category_share
+    allowed_actions: [compare_previous_period, change_granularity]
+    insight_note: Read product Pareto first; if A-class products cover most revenue while distinct products stay flat, mix risk is increasing.
+  operations:
+    label: Order Flow Operations
+    subtitle: Order throughput, row intensity and fulfillment quality across the selected slice.
+    trend_title_template: Orders Count
+    trend_x_title: Period
+    current_trace_style: bar
+    previous_trace_style: line
+    cards: [orders_count, records_count, avg_lines_per_order, success_rate]
+    primary_trend_metric: orders_count
+    allowed_actions: [compare_previous_period, change_granularity]
+    insight_note: Use Orders Count first, then read row intensity and non-cancelled rate to understand operational pressure.
+

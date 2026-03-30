@@ -10,10 +10,6 @@ logs/
 target/
 dbtproject/profiles.yml
 
-# Snowflake
-.snowflake/
-auth_key.p8
-
 # Env
 .env*
 !/.env.example
@@ -21,9 +17,16 @@ dbtproject/logs/
 
 # Project files
 RUNBOOK.md
-script_uvicorn.txt
+data/local/
 
 # Power BI (WIP - keep out of git until dashboard is finalized)
 power_bi/
 *.pbix
 *.pbit
+
+# Runtime proposal/audit data
+nextgen_dashboard/agent_data/
+
+.pytest_cache/
+nextgen_dashboard_uvicorn*.log
+uvicorn_nextgen.log

@@ -1,0 +1,264 @@
+﻿version: 1
+metrics:
+  sales_amount:
+    label: Sales Amount
+    description: Total revenue inside the selected filter window.
+    format: currency
+    aggregation: sum
+    source_column: sales_amount
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  orders_count:
+    label: Orders Count
+    description: Number of unique orders inside the selected filter window.
+    format: number
+    aggregation: distinct_count
+    source_column: order_id
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  average_ticket:
+    label: Average Ticket
+    description: Average revenue per order for the selected window.
+    format: currency
+    aggregation: derived
+    formula_hint: sales_amount / orders_count
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  avg_items_per_order:
+    label: Avg Items / Order
+    description: Average quantity sold per order as a basket-size proxy.
+    format: number
+    aggregation: derived
+    formula_hint: total_quantity / orders_count
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  revenue_in_window:
+    label: Revenue in Window
+    description: Total revenue inside the currently selected date range.
+    format: currency
+    aggregation: derived
+    formula_hint: sum(sales_amount) in selected window
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  revenue_run_rate:
+    label: Daily Revenue Run Rate
+    description: Average revenue per day across the selected window.
+    format: currency
+    aggregation: derived
+    formula_hint: sales_amount / elapsed_days
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  latest_period_sales:
+    label: Latest Period Sales
+    description: Revenue of the latest visible period at the active granularity.
+    format: currency
+    aggregation: derived
+    formula_hint: last_period_sales_amount
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  next_month_revenue_forecast:
+    label: Next Month Revenue Forecast
+    description: Holt linear forecast for next-month revenue using the selected monthly history window.
+    format: currency
+    aggregation: forecast
+    formula_hint: holt_linear(monthly_sales_amount, horizon=1)
+    dimensions: [category, city, order_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [latest_actual]
+  next_month_orders_forecast:
+    label: Next Month Orders Forecast
+    description: Holt linear forecast for next-month unique orders using the selected monthly history window.
+    format: number
+    aggregation: forecast
+    formula_hint: holt_linear(monthly_orders_count, horizon=1)
+    dimensions: [category, city, order_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [latest_actual]
+  next_month_active_customers_forecast:
+    label: Next Month Active Customers Forecast
+    description: Holt linear forecast for next-month active customers using the selected monthly history window.
+    format: number
+    aggregation: forecast
+    formula_hint: holt_linear(monthly_active_customers, horizon=1)
+    dimensions: [category, city, order_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [latest_actual]
+  revenue_at_risk:
+    label: Revenue At Risk
+    description: Revenue currently sitting in At Risk and Hibernating customer segments inside the selected window.
+    format: currency
+    aggregation: derived
+    formula_hint: revenue(At Risk + Hibernating)
+    dimensions: [category, city, customer_segment]
+    allowed_granularities: [Month]
+    allowed_comparisons: [previous_period]
+  monthly_revenue_forecast:
+    label: Monthly Revenue Forecast
+    description: Historical monthly revenue with Holt linear baseline and forward forecast.
+    format: currency
+    aggregation: forecast
+    formula_hint: holt_linear(monthly_sales_amount, horizon=3)
+    dimensions: [category, city, order_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [model_baseline]
+  active_customers:
+    label: Active Customers
+    description: Distinct customers active in the selected window.
+    format: number
+    aggregation: distinct_count
+    source_column: customer_id
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  new_customers:
+    label: New Customers
+    description: Customers active in the selected window whose first-ever purchase happened in that window.
+    format: number
+    aggregation: derived
+    formula_hint: first_business_purchase_in_window
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  returning_customers:
+    label: Returning Customers
+    description: Active customers who purchased before the selected window.
+    format: number
+    aggregation: derived
+    formula_hint: active_customers - new_customers
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  repeat_rate:
+    label: Repeat Purchase Rate
+    description: Share of active customers with more than one order in the selected window.
+    format: percent
+    aggregation: derived
+    formula_hint: repeat_customers / active_customers
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  orders_per_customer:
+    label: Orders per Active Customer
+    description: Average order count per active customer.
+    format: number
+    aggregation: derived
+    formula_hint: orders_count / active_customers
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  revenue_per_customer:
+    label: Revenue per Active Customer
+    description: Revenue contribution per active customer inside the selected window.
+    format: currency
+    aggregation: derived
+    formula_hint: sales_amount / active_customers
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  latest_full_cohort_size:
+    label: Latest Full Cohort Size
+    description: Number of customers acquired in the most recent fully closed cohort month inside the selected slice.
+    format: number
+    aggregation: derived
+    formula_hint: latest_closed_cohort_size
+    dimensions: [category, city, cohort_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [previous_period]
+  retention_m1:
+    label: Month 1 Retention
+    description: Weighted share of cohort customers who returned one month after acquisition.
+    format: percent
+    aggregation: derived
+    formula_hint: returning_customers_after_1_month / cohort_size
+    dimensions: [category, city, cohort_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [previous_period]
+  retention_m2:
+    label: Month 2 Retention
+    description: Weighted share of cohort customers who returned two months after acquisition.
+    format: percent
+    aggregation: derived
+    formula_hint: returning_customers_after_2_months / cohort_size
+    dimensions: [category, city, cohort_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [previous_period]
+  retention_m3:
+    label: Month 3 Retention
+    description: Weighted share of cohort customers who returned three months after acquisition.
+    format: percent
+    aggregation: derived
+    formula_hint: returning_customers_after_3_months / cohort_size
+    dimensions: [category, city, cohort_month]
+    allowed_granularities: [Month]
+    allowed_comparisons: [previous_period]
+  products_sold:
+    label: Products Sold (Distinct)
+    description: Number of distinct products sold in the selected window.
+    format: number
+    aggregation: distinct_count
+    source_column: product_id
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  avg_unit_price:
+    label: Average Unit Price
+    description: Realized average selling price per unit inside the selected window.
+    format: currency
+    aggregation: derived
+    formula_hint: sales_amount / total_quantity
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  top_5_products_share:
+    label: Top 5 Products Share
+    description: Share of revenue generated by the top five products in the selected window.
+    format: percent
+    aggregation: derived
+    formula_hint: top_5_product_sales / sales_amount
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  top_category_share:
+    label: Top Category Share
+    description: Share of revenue captured by the leading category in the selected window.
+    format: percent
+    aggregation: derived
+    formula_hint: top_category_sales / sales_amount
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  records_count:
+    label: Records in Window
+    description: Number of transaction rows inside the selected window.
+    format: number
+    aggregation: count
+    source_column: order_id
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  avg_lines_per_order:
+    label: Avg Lines / Order
+    description: Average number of transaction rows per order inside the selected window.
+    format: number
+    aggregation: derived
+    formula_hint: records_count / orders_count
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+  success_rate:
+    label: Non-Cancelled Rate
+    description: Share of order lines that were not cancelled in the selected window.
+    format: percent
+    aggregation: derived
+    formula_hint: non_cancelled_rows / total_rows
+    dimensions: [category, city, order_date]
+    allowed_granularities: [Day, Month, Quarter, Year]
+    allowed_comparisons: [previous_period]
+

@@ -1,441 +1,243 @@
-﻿# README.md - Data Pipeline Portfolio Project
+# Data Pipeline Portfolio
 
-## ðŸŽ¯ Project: End-to-End Data Engineering Pipeline
+![Social preview](./assets/social-preview.png)
 
-A **production-ready, end-to-end data engineering project** demonstrating modern data stack best practices with Snowflake, dbt, Fivetran (simulated), Power BI, and MCP integration.
+End-to-end analytics engineering portfolio built with `Python`, `PostgreSQL`,
+`dbt`, `FastAPI`, `Power BI`, and a custom desktop-style analytics dashboard.
 
-**Perfect for showcasing your data engineering skills to future employers! ðŸ“Š**
+This repository is intentionally structured as a portfolio case study, not just
+a code dump. It shows the full analytics lifecycle: ingestion, warehousing,
+quality, semantic modeling, API delivery, and an interactive BI product layer.
 
----
+## Why This Repository Exists
 
-## ðŸ—ï¸ Architecture Overview
+I wanted one project that proves I can do more than assemble a final dashboard.
+The repo demonstrates:
 
-```
-Data Sources (APIs) 
-    â†“
-Python Extraction (Fake Store API connector)
-    â†“
-Snowflake RAW Layer (Landing Zone)
-    â†“
-dbt Transformations
-    â”œâ”€ STAGING (Cleaning)
-    â”œâ”€ INTERMEDIATE (Business Logic)
-    â””â”€ MARTS (Analytics Ready)
-    â†“
-Power BI Dashboards + Analytics
-    â†“
-MCP + Gemini CLI (AI Insights)
-```
+- API ingestion into a `raw` layer
+- warehouse modeling with `dbt`
+- snapshots and SQL tests
+- monitoring and audit objects in SQL
+- BI semantics and reporting structures
+- API-first analytics delivery
+- a desktop-first dashboard UX with Spotlight, Compare, Bookmarks, and Action Board
 
----
+## What It Proves
 
-## ðŸš€ Quick Start (5 Minutes)
+- `100,000+` simulated order lines
+- `10,000` customers
+- `2,000` products
+- `8` dbt models
+- `1` dbt snapshot
+- `4+` SQL data quality tests
+- `19` API and semantic tests currently passing
+- desktop analytics experience with pages for:
+  - `Sales Overview`
+  - `Revenue Trends`
+  - `Predictive Outlook`
+  - `Customer Segmentation`
+  - `Retention Cohorts`
+  - `Product Performance`
+  - `Order Flow Operations`
 
-### 1. Prerequisites
+## Gallery
+
+### Desktop Shell
+
+<img src="./assets/gallery/desktop-home.png" alt="NextGen desktop analytics shell" width="900">
+
+### Sales and Predictive Views
+
+<img src="./assets/gallery/desktop-sales-predictive.png" alt="Sales Overview window in the desktop analytics dashboard" width="900">
+
+### Customer and Retention Views
+
+<img src="./assets/gallery/desktop-products-retention.png" alt="Customer Segmentation and Retention Cohorts windows in the desktop analytics dashboard" width="900">
+
+## Architecture
+
+<img src="./assets/diagrams/architecture-overview.png" alt="NextGen analytics architecture overview" width="900">
+
+## Warehouse and Database Layers
+
+<img src="./assets/diagrams/warehouse-model.png" alt="Warehouse model and database layers derived from the repository structure" width="900">
+
+Note: the warehouse image above is a repository-derived model view, not a live
+GUI screenshot of PostgreSQL. I used that approach intentionally so the repo
+shows the database structure even when a local database is not running.
+
+## Analytics Built Into the Dashboard
+
+The dashboard is not limited to topline KPIs. It includes business analysis
+methods that a senior BI / analytics workflow would actually use:
+
+- period-over-period comparisons with aligned partial-period handling
+- Pareto and `ABC` concentration analysis
+- `RFM` customer segmentation
+- retention cohort views
+- anomaly and structural shift detection
+- forecast scenarios (`Base`, `Conservative`, `Upside`)
+- drilldowns from chart -> segment -> underlying members
+- Spotlight windows with local filters and frozen context
+
+## Product Features
+
+The desktop dashboard layer includes features that move it closer to a usable
+analytics product instead of a static portfolio mockup:
+
+- desktop-style navigation with windows and taskbar
+- `Spotlight` windows for focused analysis
+- `Compare` windows for side-by-side business slices
+- `Bookmarks` to restore workspace layouts
+- `Recent` items and `Action Board` for follow-up
+- CSV export from detail and comparison views
+- window design themes inside the desktop shell
+
+## AI Collaboration Disclosure
+
+I did use an AI coding assistant while building this repository. I do not hide
+that, because the goal of the project is to show modern, defensible work.
+
+I used AI for:
+
+- implementation acceleration
+- UI iteration and alternative design exploration
+- refactoring and cleanup
+- test expansion
+- documentation drafting
+- security review and hardening suggestions
+
+I did **not** outsource the important parts of the project to AI. The product
+direction, business framing, acceptance/rejection of changes, and final review
+were still my responsibility. In practice, I used AI the same way many teams
+now use it professionally: to move faster, compare options, and raise the
+quality bar.
+
+More detail: [AI Collaboration Disclosure](./docs/AI_COLLABORATION_DISCLOSURE.md)
+
+## Quick Start
+
+### Prerequisites
+
+- Python `3.10+`
+- Docker Desktop or local PostgreSQL
+- Power BI Desktop (optional)
+
+### 1. Start PostgreSQL
+
 ```bash
-# Install Python 3.10+
-# Install Git
-# Snowflake account (free trial available)
+docker compose up -d
 ```
 
-### 2. Clone & Setup
+### 2. Create `.env`
+
 ```bash
-git clone https://github.com/yourusername/data-pipeline-portfolio
-cd data-pipeline-portfolio
+cp .env.example .env
+```
+
+### 3. Install dependencies
+
+```bash
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Configure Snowflake
-Create `.env` file in root:
-```env
-SNOWFLAKE_ACCOUNT=your_account
-SNOWFLAKE_USER=your_user
-SNOWFLAKE_PASSWORD=your_password
-SNOWFLAKE_WAREHOUSE=COMPUTE_WH
-SNOWFLAKE_DATABASE=ANALYTICS
-SNOWFLAKE_SCHEMA=RAW
+### 4. Load sample data
+
+```bash
+python scripts/loadsampledata.py --mode full_refresh
 ```
 
-### 4. Run Setup Script
+### 5. Run dbt
+
+```bash
+cd dbtproject
+dbt deps
+dbt run --full-refresh
+dbt snapshot
+dbt test
+```
+
+### 6. Create monitoring objects
+
 ```bash
 cd ..
-python scripts/loadsampledata.py
-cd ../dbt_project
-dbt run
-dbt test
+psql "postgresql://postgres:postgres@localhost:${POSTGRES_PORT:-5432}/analytics" -f scripts/setup_data_quality_audit.sql
+psql "postgresql://postgres:postgres@localhost:${POSTGRES_PORT:-5432}/analytics" -f scripts/setup_data_quality_alerting.sql
+psql "postgresql://postgres:postgres@localhost:${POSTGRES_PORT:-5432}/analytics" -f scripts/setup_operational_monitoring_views.sql
 ```
 
-### 5. Check Results
-```bash
-dbt docs generate
-dbt docs serve  # Opens interactive documentation
-```
-
----
-
-## ðŸ“ Project Structure
-
-```
-data-pipeline-portfolio/
-â”‚
-â”œâ”€â”€ fivetran_simulator/          # Data extraction layer
-â”‚   â”œâ”€â”€ extract_orders.py        # Simulates orders API
-â”‚   â”œâ”€â”€ extract_customers.py     # Simulates customer CRM
-â”‚   â””â”€â”€ extract_products.py      # Simulates product catalog
-â”‚
-â”œâ”€â”€ dbtproject/                 # Transformation layer
-â”‚   â”œâ”€â”€ models/
-â”‚   â”‚   â”œâ”€â”€ staging/             # Raw â†’ Cleaned
-â”‚   â”‚   â”œâ”€â”€ intermediate/        # Business logic
-â”‚   â”‚   â””â”€â”€ marts/               # Analytics tables
-â”‚   â”œâ”€â”€ tests/                   # Data quality tests
-â”‚   â””â”€â”€ macros/                  # Reusable components
-â”‚
-â”œâ”€â”€ mcp_tools/                   # AI Integration
-â”‚   â”œâ”€â”€ data_analyzer.py         # MCP server for insights
-â”‚   â””â”€â”€ mcp_server_config.json   # Configuration
-â”‚
-â”œâ”€â”€ scripts/
-â”‚   â”œâ”€â”€ setup_snowflake.sql      # DDL scripts
-â”‚   â”œâ”€â”€ load_sample_data.py      # Sample data loader
-â”‚   â””â”€â”€ run_pipeline.sh          # Full pipeline runner
-â”‚
-â”œâ”€â”€ docs/                        # Documentation
-â”‚   â”œâ”€â”€ ARCHITECTURE.md
-â”‚   â”œâ”€â”€ DBT_MODELS.md
-â”‚   â””â”€â”€ DATA_LINEAGE.md
-â”‚
-â”œâ”€â”€ .github/workflows/
-â”‚   â””â”€â”€ dbt_run.yml             # CI/CD automation
-â”‚
-â””â”€â”€ power_bi/
-    â””â”€â”€ sales_dashboard.pbix    # BI Visualization
-```
-
----
-
-## ðŸ”„ Data Pipeline Stages
-
-### Stage 1: EXTRACT (Fake Store API Connector)
-Extract data from multiple sources:
-- **Orders API**: Transaction data
-- **Customer CRM**: Customer information
-- **Product Catalog**: Product master data
-
-**Files**: `fivetran_simulator/*.py` (`extract_customers.py`, `extract_products.py`, `extract_orders.py`) now call the Fake Store API.
-
-```python
-# Example: extract_orders.py
-from fivetran_simulator import OrdersExtractor
-
-extractor = OrdersExtractor(api_url="https://api.example.com")
-orders = extractor.fetch_recent_orders()
-orders.to_snowflake(table="RAW.ORDERS")
-```
-
----
-
-### Stage 2: LOAD (Snowflake)
-Land raw data in Snowflake:
-- **Schema**: `RAW`
-- **Tables**: `ORDERS`, `CUSTOMERS`, `PRODUCTS`
-- **Pattern**: Append/Merge for incremental loads
-
-```sql
--- RAW Layer Structure
-CREATE SCHEMA RAW;
-
-CREATE TABLE RAW.ORDERS (
-    order_id STRING,
-    customer_id STRING,
-    order_date TIMESTAMP,
-    total_amount DECIMAL(10,2),
-    _fivetran_synced TIMESTAMP
-);
-```
-
----
-
-### Stage 3: TRANSFORM (dbt)
-
-#### 3a. STAGING Layer - Cleaning & Standardization
-```sql
--- models/staging/stg_orders.sql
-with source as (
-    select * from {{ source('raw', 'orders') }}
-),
-cleaned as (
-    select
-        order_id::STRING as order_id,
-        customer_id::STRING as customer_id,
-        order_date::DATE as order_date,
-        total_amount::DECIMAL(10,2) as total_amount,
-        CASE WHEN total_amount > 0 THEN 'valid' ELSE 'invalid' END as status,
-        _fivetran_synced::TIMESTAMP as loaded_at
-    from source
-    where _fivetran_synced >= DATEADD(day, -1, CURRENT_TIMESTAMP)
-)
-select * from cleaned
-```
-
-#### 3b. INTERMEDIATE Layer - Business Logic
-```sql
--- models/intermediate/int_orders_enhanced.sql
-with orders as (
-    select * from {{ ref('stg_orders') }}
-),
-customers as (
-    select * from {{ ref('stg_customers') }}
-),
-enhanced as (
-    select
-        o.order_id,
-        o.customer_id,
-        c.customer_name,
-        c.segment,
-        o.order_date,
-        o.total_amount,
-        DATEDIFF(day, o.order_date, CURRENT_DATE) as days_since_order
-    from orders o
-    left join customers c on o.customer_id = c.customer_id
-)
-select * from enhanced
-```
-
-#### 3c. MARTS Layer - Analytics Ready
-```sql
--- models/marts/fct_sales.sql
-with orders as (
-    select * from {{ ref('int_orders_enhanced') }}
-),
-products as (
-    select * from {{ ref('stg_products') }}
-),
-facts as (
-    select
-        o.order_id as sales_key,
-        o.customer_id,
-        p.product_id,
-        o.segment,
-        o.order_date,
-        o.total_amount,
-        p.category,
-        p.price,
-        o.total_amount / NULLIF(p.price, 0) as units_sold
-    from orders o
-    left join products p on o.product_id = p.product_id
-)
-select * from facts
-```
-
----
-
-### Stage 4: TEST (Data Quality)
-```sql
--- tests/assert_positive_revenue.sql
-select count(*) as failure_count
-from {{ ref('fct_sales') }}
-where total_amount <= 0
-having count(*) > 0
-```
+### 7. Run the desktop dashboard
 
 ```bash
-dbt test  # Run all tests
+uvicorn nextgen_dashboard.backend.main:app --reload --port 8601
 ```
 
----
+Open `http://127.0.0.1:8601`
 
-### Stage 5: ANALYTICS (Power BI)
-Connect Power BI to Snowflake MARTS schema:
-- **fct_sales**: Sales transactions
-- **dim_customer**: Customer dimensions
-- **dim_product**: Product dimensions
-- **dim_date**: Date dimension
+## Quality and Security
 
-**Dashboards**:
-- ðŸ“ˆ Sales Overview
-- ðŸ’° Revenue Trends
-- ðŸ‘¥ Customer Segmentation
-- ðŸŽ¯ Product Performance
-
----
-
-### Stage 6: AI INSIGHTS (MCP + Gemini CLI)
-Automated data analysis and pattern detection:
+Run API tests:
 
 ```bash
-gemini-cli --mcp data_analyzer \
-  --query "Analyze sales trends and identify top customers"
+pytest tests/test_nextgen_dashboard_api.py
 ```
 
----
-
-## ðŸ§ª Testing & Quality
-
-### dbt Tests
-```bash
-# Run all dbt tests
-dbt test
-
-# Run tests for specific model
-dbt test --select fct_sales
-
-# Test with detailed output
-dbt test --debug
-```
-
-### Python Tests
-```bash
-# Run pytest suite
-pytest tests/ -v --cov
-
-# Run specific test
-pytest tests/test_extraction.py -v
-```
-
----
-
-## ðŸ“Š Performance Optimization
-
-### dbt Materializations
-- **View**: Staging layer (not materialized)
-- **Table**: Intermediate layer (materialized)
-- **Incremental**: Marts (append new rows only)
-
-### Snowflake Optimization
-- Clustering keys on join columns
-- Partitioning by date
-- Statistics for query optimization
-
-```sql
--- Clustered Incremental Table
-{{ config(
-    materialized='incremental',
-    unique_key='sales_key',
-    cluster_by=['order_date', 'customer_id']
-) }}
-```
-
----
-
-## ðŸ” Security & Governance
-
-âœ… **Version Control**: All code in GitHub  
-âœ… **Access Control**: Row-level security via dbt  
-âœ… **Data Lineage**: dbt provides full lineage  
-âœ… **Audit Trail**: Fivetran tracks data freshness  
-âœ… **Testing**: Automated data quality checks  
-
----
-
-## ðŸš€ Deployment
-
-### Local Development
-```bash
-dbt run --target dev
-```
-
-### Production
-```bash
-dbt run --target prod
-```
-
-### CI/CD (GitHub Actions)
-Push to GitHub â†’ Automatic dbt testing â†’ Approval â†’ Deploy to production
-
-See `.github/workflows/dbt_run.yml`
-
----
-
-## ðŸ“š Documentation
-
-- **ARCHITECTURE.md**: System design & decisions
-- **DBT_MODELS.md**: Data model documentation
-- **DATA_LINEAGE.md**: End-to-end data flow
-
-Generate dbt docs:
-```bash
-cd dbt_project
-dbt docs generate
-dbt docs serve
-```
-
----
-
-## ðŸ› ï¸ Common Commands
+Run the dashboard benchmark:
 
 ```bash
-# Development
-dbt run                    # Execute all models
-dbt test                   # Run data quality tests
-dbt debug                  # Test Snowflake connection
-dbt deps                   # Install dbt packages
-
-# Documentation
-dbt docs generate          # Generate interactive docs
-dbt docs serve             # View docs locally
-
-# Testing & Quality
-dbt test --select model_name
-pytest tests/ -v --cov
-
-# Maintenance
-dbt snapshot               # Create data snapshots
-dbt freshness             # Check source freshness
-
-# Pipeline
-python scripts/loadsampledata.py   # Load test data
-bash scripts/run_pipeline.sh         # Run full pipeline
+python scripts/benchmark_dashboard.py --threshold-seconds 1.50
 ```
 
----
+Security posture added to the project:
 
-## ðŸ’¡ Key Features
+- explicit CORS origins instead of wildcard access
+- mutating agent endpoints disabled by default
+- token-gated mutation flow when enabled
+- static asset allowlist instead of serving the whole frontend directory
+- atomic local writes for governed proposal state
 
-âœ… **Production-Ready**: Error handling, logging  
-âœ… **Scalable**: Easy to add new sources  
-âœ… **Tested**: dbt tests + Python tests  
-âœ… **Documented**: Clear lineage & docs  
-âœ… **CI/CD**: GitHub Actions automation  
-âœ… **Modular**: Staging â†’ Intermediate â†’ Marts  
-âœ… **Portfolio-Quality**: Professional structure  
+Docs:
 
----
+- [AI Agent Security](./docs/AI_AGENT_SECURITY.md)
+- [Quality Gates](./docs/QUALITY_GATES.md)
 
-## ðŸŽ“ Learning Resources
+## Repository Map
 
-- [dbt Documentation](https://docs.getdbt.com/)
-- [Snowflake University](https://university.snowflake.com/)
-- [Modern Data Stack Overview](https://www.moderndatastack.xyz/)
-- [Data Engineering Best Practices](https://www.dataengineeringwiki.com/)
+- `fivetran_simulator/`: ingestion simulators and scaled data generation
+- `dbtproject/models/`: dbt transformations
+- `dbtproject/tests/`: dbt SQL tests
+- `scripts/setup_*.sql`: monitoring and data quality objects
+- `scripts/benchmark_dashboard.py`: dashboard performance regression check
+- `docs/MEASURE_DICTIONARY.md`: semantic definitions and measures
+- `nextgen_dashboard/`: FastAPI backend plus the desktop-first frontend
+- `assets/gallery/`: real screenshots from the project
+- `assets/diagrams/`: generated architecture and warehouse visuals
+- `assets/social-preview.png`: recommended GitHub repository social preview image
 
----
+## Recruiter Summary
 
-## ðŸ“ž Support
+If you want the short version, this repo shows that I can build and explain an
+analytics stack end to end:
 
-- Issues: GitHub Issues
-- Questions: Check discussions
-- Improvements: Pull requests welcome!
+- ingestion
+- warehouse modeling
+- tests and monitoring
+- BI semantics
+- API design
+- desktop-style analytics UX
+- secure and explainable iteration with AI assistance
 
----
+## Useful Docs
 
-## ðŸ“„ License
+- [GitHub Repository Setup](./docs/GITHUB_REPOSITORY_SETUP.md)
 
-MIT License - Feel free to use for portfolio purposes
-
----
-
-## ðŸŽ¯ Next Steps
-
-1. âœ… Clone repository
-2. âœ… Setup Snowflake connection
-3. âœ… Run `dbt run` and `dbt test`
-4. âœ… Connect Power BI dashboard
-5. âœ… Explore dbt docs
-6. âœ… Create GitHub repo for your portfolio
-7. âœ… Share with potential employers!
-
-**Happy data engineering! ðŸš€**
-
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Data Lineage](./docs/DATA_LINEAGE.md)
+- [dbt Models](./docs/DBT_MODELS.md)
+- [Measure Dictionary](./docs/MEASURE_DICTIONARY.md)
+- [Predictive Outlook Method](./docs/PREDICTIVE_OUTLOOK_METHOD.md)
+- [Statistical Analytics Stack](./docs/STATISTICAL_ANALYTICS_STACK.md)
+- [Project Interview Narrative](./docs/PROJECT_INTERVIEW_NARRATIVE.md)
+- [Portfolio Action Plan](./docs/PORTFOLIO_ACTION_PLAN.md)
