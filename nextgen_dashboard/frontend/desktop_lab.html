@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>NextGen Analytics Desktop</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+        />
+        <link rel="stylesheet" href="/static/desktop_lab.css?v=desktoplab23" />
+        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script defer src="/static/desktop_lab.js?v=desktoplab23"></script>
+    </head>
+    <body>
+        <div class="desktop">
+            <header class="topbar">
+                <div class="topbar-main">
+                    <div class="brandline">
+                        <div class="hogmark" aria-hidden="true">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <strong>NextGen Analytics Desktop</strong>
+                    </div>
+                    <div class="topbar-controlbar">
+                        <label class="control-chip">
+                            <span>Start</span>
+                            <input
+                                id="lab-start-date"
+                                type="text"
+                                inputmode="none"
+                                autocomplete="off"
+                            />
+                        </label>
+                        <label class="control-chip">
+                            <span>End</span>
+                            <input
+                                id="lab-end-date"
+                                type="text"
+                                inputmode="none"
+                                autocomplete="off"
+                            />
+                        </label>
+                        <div class="pill-group" id="lab-granularity-pills">
+                            <button
+                                type="button"
+                                class="desktop-pill"
+                                data-granularity="Day"
+                            >
+                                Day
+                            </button>
+                            <button
+                                type="button"
+                                class="desktop-pill active"
+                                data-granularity="Month"
+                            >
+                                Month
+                            </button>
+                            <button
+                                type="button"
+                                class="desktop-pill"
+                                data-granularity="Quarter"
+                            >
+                                Quarter
+                            </button>
+                            <button
+                                type="button"
+                                class="desktop-pill"
+                                data-granularity="Year"
+                            >
+                                Year
+                            </button>
+                        </div>
+                        <label class="control-chip control-chip--select">
+                            <span>Scenario</span>
+                            <select id="lab-scenario">
+                                <option selected>Base</option>
+                                <option>Conservative</option>
+                                <option>Upside</option>
+                            </select>
+                        </label>
+                        <label
+                            class="control-chip control-chip--select control-chip--theme"
+                        >
+                            <span>Window Design</span>
+                            <select id="lab-window-theme">
+                                <option value="glass" selected>
+                                    Glass Blue
+                                </option>
+                                <option value="graphite">Graphite</option>
+                                <option value="light">Light</option>
+                                <option value="desktop">Desktop</option>
+                            </select>
+                        </label>
+                        <div class="topbar-utility-actions">
+                            <button
+                                class="toolbar-button"
+                                id="open-recent-btn"
+                                type="button"
+                            >
+                                Recent
+                            </button>
+                            <button
+                                class="toolbar-button"
+                                id="save-bookmark-btn"
+                                type="button"
+                            >
+                                Save Bookmark
+                            </button>
+                            <button
+                                class="toolbar-button"
+                                id="open-bookmarks-btn"
+                                type="button"
+                            >
+                                Bookmarks
+                            </button>
+                            <button
+                                class="toolbar-button"
+                                id="open-actions-btn"
+                                type="button"
+                            >
+                                Action Board
+                            </button>
+                        </div>
+                    </div>
+                    <div class="top-actions">
+                        <div class="desktop-status" id="lab-status">
+                            Loading metadata...
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="desktop-area">
+                <aside
+                    class="desktop-icons desktop-icons--left"
+                    id="desktop-icons"
+                    aria-label="Desktop pages"
+                ></aside>
+                <div class="desktop-art" aria-hidden="true">
+                    <div class="wallpaper-brand">
+                        <div class="wallpaper-mark">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="wallpaper-wordmark">
+                            <strong>NextGen</strong>
+                            <span>Programmable Analytics</span>
+                        </div>
+                    </div>
+                    <div class="field-block field-block--a"></div>
+                    <div class="field-block field-block--b"></div>
+                    <div class="field-block field-block--c"></div>
+                </div>
+                <section class="windows-layer" id="windowsLayer"></section>
+            </main>
+
+            <footer class="taskbar">
+                <button
+                    class="start-button"
+                    id="desktop-toggle"
+                    type="button"
+                    aria-label="Show desktop"
+                >
+                    <span class="start-button-icon" aria-hidden="true"></span
+                    ><span class="start-button-label">Show desktop</span>
+                </button>
+                <div class="tasks" id="desktop-tasks"></div>
+                <div class="statusbar">
+                    <span class="status-dot"></span>
+                    <span id="taskbar-message"
+                        >Open a page from the desktop icons. Shared filters
+                        update any open windows.</span
+                    >
+                    <span id="taskbar-clock"></span>
+                </div>
+            </footer>
+        </div>
+    </body>
+</html>

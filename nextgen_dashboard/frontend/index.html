@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>NextGen Revenue Dashboard</title>
+        <link rel="stylesheet" href="/static/styles.css?v=surface2" />
+        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    </head>
+    <body>
+        <div class="app-shell">
+            <aside class="sidebar glass-card">
+                <div class="brand">
+                    <p class="hero-kicker">Analytics</p>
+                    <h2>Navigation</h2>
+                </div>
+                <nav id="sidebar-nav" class="sidebar-nav"></nav>
+            </aside>
+
+            <main class="main-content">
+                <header class="hero glass-card">
+                    <div>
+                        <p class="hero-kicker">
+                            Programmable Analytics API-first
+                        </p>
+                        <h1 id="page-title">Sales Overview</h1>
+                        <p class="hero-subtitle" id="page-subtitle">
+                            Scalable dashboard foundation with backend services
+                            and AI-ready interfaces.
+                        </p>
+                    </div>
+                    <div class="hero-actions">
+                        <div class="surface-mode-field">
+                            <label for="surface-skin">Surface</label>
+                            <select id="surface-skin">
+                                <option value="glass" selected>Glass</option>
+                                <option value="desktop">Desktop</option>
+                            </select>
+                        </div>
+                        <button
+                            id="assistant-toggle"
+                            type="button"
+                            class="secondary-btn assistant-toggle-btn"
+                        >
+                            Open Assistant
+                        </button>
+                        <div class="status-pill" id="health-pill">
+                            Checking health...
+                        </div>
+                    </div>
+                </header>
+
+                <section class="filters glass-card">
+                    <div class="filters-layout">
+                        <div class="filters-block filters-block-slice">
+                            <p class="filters-section-label">Business Slice</p>
+                            <div class="slice-grid">
+                                <div class="field field-range">
+                                    <label for="start-date">Date Range</label>
+                                    <div class="range-inputs">
+                                        <input id="start-date" type="date" />
+                                        <input id="end-date" type="date" />
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="categories">Category</label>
+                                    <select id="categories" class="hidden-native-select" multiple></select>
+                                    <div id="categories-control" class="multi-select"></div>
+                                </div>
+                                <div class="field">
+                                    <label for="cities">City</label>
+                                    <select id="cities" class="hidden-native-select" multiple></select>
+                                    <div id="cities-control" class="multi-select"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="trend-view-block" class="filters-block filters-block-view">
+                            <p class="filters-section-label">Trend View</p>
+                            <div id="granularity-pills" class="granularity-pills">
+                                <button type="button" class="granularity-pill" data-granularity="Day">Day</button>
+                                <button type="button" class="granularity-pill active" data-granularity="Month">Month</button>
+                                <button type="button" class="granularity-pill" data-granularity="Quarter">Quarter</button>
+                                <button type="button" class="granularity-pill" data-granularity="Year">Year</button>
+                            </div>
+                            <p class="filters-hint">Filters update automatically across cards and charts.</p>
+                            <select id="granularity" class="hidden" aria-hidden="true" tabindex="-1">
+                                <option>Day</option>
+                                <option selected>Month</option>
+                                <option>Quarter</option>
+                                <option>Year</option>
+                            </select>
+                        </div>
+
+                        <div id="scenario-view-block" class="filters-block filters-block-view hidden">
+                            <p class="filters-section-label">Forecast Scenario</p>
+                            <div id="scenario-pills" class="granularity-pills">
+                                <button type="button" class="granularity-pill active" data-scenario="Base">Base</button>
+                                <button type="button" class="granularity-pill" data-scenario="Conservative">Conservative</button>
+                                <button type="button" class="granularity-pill" data-scenario="Upside">Upside</button>
+                            </div>
+                            <p class="filters-hint">Scenario updates forecast cards, driver mix and watchlist.</p>
+                            <select id="scenario-mode" class="hidden" aria-hidden="true" tabindex="-1">
+                                <option selected>Base</option>
+                                <option>Conservative</option>
+                                <option>Upside</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="semantic-meta" class="semantic-meta glass-card hidden" aria-hidden="true">
+                    <div class="semantic-block">
+                        <p class="semantic-label">Primary Metric</p>
+                        <div id="primary-metric" class="semantic-chips"></div>
+                        <p
+                            id="primary-metric-description"
+                            class="semantic-description"
+                        ></p>
+                    </div>
+                    <div class="semantic-block">
+                        <p class="semantic-label">Metric Governance</p>
+                        <div
+                            id="metric-constraints"
+                            class="semantic-chips"
+                        ></div>
+                    </div>
+                    <div class="semantic-block semantic-actions-block">
+                        <p class="semantic-label">Allowed Actions</p>
+                        <div id="allowed-actions" class="semantic-chips"></div>
+                    </div>
+                </section>
+
+                <section id="cards-grid" class="cards-grid"></section>
+
+                <section id="story-panel" class="story-panel glass-card hidden">
+                    <div class="story-topline">
+                        <p class="hero-kicker">Reading Guide</p>
+                        <p id="story-highlight" class="story-highlight"></p>
+                    </div>
+                    <div id="story-support" class="story-support"></div>
+                </section>
+
+                <section class="glass-card chart-panel">
+                    <div class="panel-title-row">
+                        <h2 id="trend-title">Sales Trend</h2>
+                        <button id="back-overview" class="chart-back hidden">
+                            Back to overview
+                        </button>
+                        <p id="comparison-rule" class="comparison-rule"></p>
+                    </div>
+                    <div id="trend-chart"></div>
+                </section>
+
+                <section class="analytics-grid">
+                    <section id="secondary-panel" class="glass-card chart-panel hidden">
+                        <div class="panel-title-row secondary-title-row">
+                            <h2 id="secondary-title">Driver View</h2>
+                        </div>
+                        <div id="secondary-chart"></div>
+                    </section>
+
+                    <section id="detail-panel" class="glass-card table-panel hidden">
+                        <div class="panel-title-row secondary-title-row">
+                            <h2 id="detail-title">Detail</h2>
+                        </div>
+                        <div id="detail-table"></div>
+                    </section>
+                </section>
+
+                <section id="focus-panel" class="glass-card table-panel hidden">
+                    <div class="panel-title-row secondary-title-row">
+                        <div class="focus-heading">
+                            <div class="focus-title-row">
+                                <h2 id="focus-title">Focus Detail</h2>
+                                <span id="focus-meta" class="focus-meta hidden"></span>
+                            </div>
+                            <p id="focus-subtitle" class="focus-subtitle"></p>
+                        </div>
+                        <button id="focus-clear" type="button" class="secondary-btn hidden">Clear focus</button>
+                    </div>
+                    <div id="focus-table"></div>
+                </section>
+            </main>
+        </div>
+
+        <div id="assistant-overlay" class="assistant-overlay hidden"></div>
+        <aside id="assistant-drawer" class="assistant-drawer glass-card hidden">
+            <div class="assistant-drawer-header">
+                <div>
+                    <p class="hero-kicker">Assistant</p>
+                    <h2>Guided Changes</h2>
+                    <p class="agent-intro">
+                        Request changes without touching configuration. The
+                        drawer keeps assistant and governance controls out of
+                        the main dashboard surface.
+                    </p>
+                </div>
+                <button
+                    id="assistant-close"
+                    type="button"
+                    class="secondary-btn"
+                >
+                    Close
+                </button>
+            </div>
+
+            <section class="agent-panel-section">
+                <div class="assistant-controls">
+                    <div class="field proposal-wide">
+                        <label for="assistant-request"
+                            >What should change on this page?</label
+                        >
+                        <textarea
+                            id="assistant-request"
+                            placeholder="Example: prioritize retention KPIs and make the comparison logic clearer."
+                        ></textarea>
+                    </div>
+                    <div class="actions assistant-actions">
+                        <button id="run-assistant" type="button">
+                            Suggest Changes
+                        </button>
+                        <button
+                            id="clear-assistant"
+                            type="button"
+                            class="secondary-btn"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                    <div id="assistant-status" class="assistant-status">
+                        Ask for a change or use a guided prompt below.
+                    </div>
+                    <div id="quick-actions" class="quick-actions"></div>
+                </div>
+                <div id="suggestions-list" class="agent-list"></div>
+            </section>
+
+            <section class="agent-panel-section">
+                <div class="agent-panel-header">
+                    <div>
+                        <p class="hero-kicker">Governance</p>
+                        <h2>Review Queue</h2>
+                    </div>
+                </div>
+                <div id="proposal-queue" class="agent-list"></div>
+                <div class="agent-panel-header preview-head">
+                    <div>
+                        <p class="hero-kicker">Preview</p>
+                        <h2>Selected Proposal</h2>
+                    </div>
+                </div>
+                <div id="proposal-preview" class="agent-list compact"></div>
+                <details class="governance-detail" open>
+                    <summary>Active Overrides</summary>
+                    <div class="agent-panel-header drafts-head">
+                        <div>
+                            <p class="hero-kicker">Drafts</p>
+                            <h2>Active Overrides</h2>
+                        </div>
+                        <button
+                            id="clear-drafts"
+                            type="button"
+                            class="secondary-btn"
+                        >
+                            Reset Drafts
+                        </button>
+                    </div>
+                    <div id="draft-state" class="agent-list compact"></div>
+                </details>
+                <details class="governance-detail">
+                    <summary>Recent Events</summary>
+                    <div class="agent-panel-header audit-head">
+                        <div>
+                            <p class="hero-kicker">Audit</p>
+                            <h2>Recent Events</h2>
+                        </div>
+                    </div>
+                    <div id="audit-log" class="agent-list compact"></div>
+                </details>
+                <details class="advanced-proposal">
+                    <summary>Advanced proposal editor</summary>
+                    <form id="proposal-form" class="proposal-form">
+                        <div class="field">
+                            <label for="proposal-title">Proposal Title</label>
+                            <input id="proposal-title" type="text" />
+                        </div>
+                        <div class="field">
+                            <label for="proposal-target">Target</label>
+                            <select id="proposal-target">
+                                <option value="dashboard" selected>dashboard</option>
+                                <option value="page">page</option>
+                                <option value="semantic_layer">semantic_layer</option>
+                            </select>
+                        </div>
+                        <div class="field proposal-wide">
+                            <label for="proposal-rationale">Rationale</label>
+                            <textarea id="proposal-rationale"></textarea>
+                        </div>
+                        <div class="field proposal-wide">
+                            <label for="proposal-after">After</label>
+                            <textarea id="proposal-after"></textarea>
+                        </div>
+                        <div class="assistant-actions proposal-actions">
+                            <button id="preview-proposal" type="button">
+                                Preview Form
+                            </button>
+                            <button type="submit">Add to Review Queue</button>
+                        </div>
+                    </form>
+                </details>
+            </section>
+        </aside>
+
+        <script src="/static/app.js?v=surface2"></script>
+    </body>
+</html>
