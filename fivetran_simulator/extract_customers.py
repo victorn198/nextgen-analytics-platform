@@ -1,45 +1,45 @@
 import os
-import time
 from datetime import datetime, timedelta
 from random import Random
 
 import psycopg2
-import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-API_BASE_URL = os.getenv("FAKESTORE_API_BASE_URL", "https://fakestoreapi.com")
-API_TIMEOUT_SECONDS = int(os.getenv("FAKESTORE_TIMEOUT_SECONDS", "20"))
-API_MAX_RETRIES = int(os.getenv("FAKESTORE_MAX_RETRIES", "3"))
 TARGET_CUSTOMERS = int(os.getenv("FAKESTORE_TARGET_CUSTOMERS", "10000"))
 INSERT_BATCH_SIZE = int(os.getenv("FAKESTORE_INSERT_BATCH_SIZE", "5000"))
 RANDOM_SEED = int(os.getenv("FAKESTORE_RANDOM_SEED", "42"))
 
 
 def _fetch_users():
-    endpoint = f"{API_BASE_URL}/users"
-    last_error = None
-
-    for attempt in range(1, API_MAX_RETRIES + 1):
-        try:
-            response = requests.get(endpoint, timeout=API_TIMEOUT_SECONDS)
-            response.raise_for_status()
-            payload = response.json()
-            if not isinstance(payload, list):
-                raise ValueError("Unexpected users payload format (expected list).")
-            return payload
-        except (requests.RequestException, ValueError) as exc:
-            last_error = exc
-            if attempt < API_MAX_RETRIES:
-                time.sleep(attempt)
-
-    raise RuntimeError(f"Failed to fetch users from Fake Store API: {last_error}")
+    """
+    Mocks the FakeStoreAPI users endpoint since it is frequently down.
+    Returns a large list of templates that the load_customers function scales.
+    """
+    templates = []
+    firsts = ["John", "Jane", "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank"]
+    lasts = ["Smith", "Doe", "Johnson", "Brown", "Davis", "Miller", "Wilson", "Moore"]
+    cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego"]
+    
+    for i in range(50):
+        templates.append({
+            "name": {
+                "firstname": firsts[i % len(firsts)],
+                "lastname": lasts[i % len(lasts)]
+            },
+            "address": {
+                "city": cities[i % len(cities)],
+                "zipcode": f"{(10000 + i*17) % 99999:05d}"
+            }
+        })
+    return templates
 
 
 def load_customers(conn):
     """
-    Fetches customers from Fake Store API and scales them into raw.customers_raw.
+    Generates customer rows from local templates and scales them into
+    raw.customers_raw.
     Incremental behavior: inserts only missing customer IDs.
     """
     users = _fetch_users()
