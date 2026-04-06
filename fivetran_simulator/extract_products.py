@@ -1,44 +1,41 @@
 import os
-import time
 from random import Random
 
 import psycopg2
-import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-API_BASE_URL = os.getenv("FAKESTORE_API_BASE_URL", "https://fakestoreapi.com")
-API_TIMEOUT_SECONDS = int(os.getenv("FAKESTORE_TIMEOUT_SECONDS", "20"))
-API_MAX_RETRIES = int(os.getenv("FAKESTORE_MAX_RETRIES", "3"))
 TARGET_PRODUCTS = int(os.getenv("FAKESTORE_TARGET_PRODUCTS", "2000"))
 INSERT_BATCH_SIZE = int(os.getenv("FAKESTORE_INSERT_BATCH_SIZE", "5000"))
 RANDOM_SEED = int(os.getenv("FAKESTORE_RANDOM_SEED", "42"))
 
 
 def _fetch_products():
-    endpoint = f"{API_BASE_URL}/products"
-    last_error = None
-
-    for attempt in range(1, API_MAX_RETRIES + 1):
-        try:
-            response = requests.get(endpoint, timeout=API_TIMEOUT_SECONDS)
-            response.raise_for_status()
-            payload = response.json()
-            if not isinstance(payload, list):
-                raise ValueError("Unexpected products payload format (expected list).")
-            return payload
-        except (requests.RequestException, ValueError) as exc:
-            last_error = exc
-            if attempt < API_MAX_RETRIES:
-                time.sleep(attempt)
-
-    raise RuntimeError(f"Failed to fetch products from Fake Store API: {last_error}")
+    """
+    Mocks the FakeStoreAPI products endpoint.
+    Returns templates that the load_products function scales.
+    """
+    templates = []
+    categories = ["electronics", "jewelery", "men's clothing", "women's clothing", "home goods"]
+    titles = ["Widget", "Gadget", "Thingamajig", "Doohickey", "Contraption", "Apparatus", "Device", "Module"]
+    
+    for i in range(50):
+        templates.append({
+            "title": f"{titles[i % len(titles)]} {i}",
+            "price": 10.0 + (i * 2.5) % 100,
+            "category": categories[i % len(categories)],
+            "rating": {
+                "count": 50 + i * 10
+            }
+        })
+    return templates
 
 
 def load_products(conn):
     """
-    Fetches products from Fake Store API and scales them into raw.products_raw.
+    Generates product rows from local templates and scales them into
+    raw.products_raw.
     Incremental behavior: inserts only missing product IDs.
     """
     products = _fetch_products()

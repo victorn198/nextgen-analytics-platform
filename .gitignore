@@ -9,6 +9,7 @@ dbt_packages/
 logs/
 target/
 dbtproject/profiles.yml
+dbtproject/*.log
 
 # Env
 .env*

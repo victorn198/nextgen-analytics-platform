@@ -1,17 +1,12 @@
 import os
-import time
 from datetime import datetime, timedelta
 from random import Random
 
 import psycopg2
-import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-API_BASE_URL = os.getenv("FAKESTORE_API_BASE_URL", "https://fakestoreapi.com")
-API_TIMEOUT_SECONDS = int(os.getenv("FAKESTORE_TIMEOUT_SECONDS", "20"))
-API_MAX_RETRIES = int(os.getenv("FAKESTORE_MAX_RETRIES", "3"))
 ORDER_STATUSES = ["pending", "paid", "cancelled", "shipped", "completed"]
 TARGET_ORDER_LINES = int(os.getenv("FAKESTORE_TARGET_ORDER_LINES", "100000"))
 INSERT_BATCH_SIZE = int(os.getenv("FAKESTORE_INSERT_BATCH_SIZE", "5000"))
@@ -20,26 +15,26 @@ HISTORY_DAYS = int(os.getenv("FAKESTORE_HISTORY_DAYS", "730"))
 INCREMENTAL_RECENCY_DAYS = int(os.getenv("FAKESTORE_INCREMENTAL_RECENCY_DAYS", "45"))
 
 
-def _fetch_json(endpoint):
-    url = f"{API_BASE_URL}{endpoint}"
-    last_error = None
+def _build_cart_templates():
+    """
+    Builds stable cart-like templates locally so order generation stays fully
+    deterministic and does not depend on the external Fake Store API.
+    """
+    base_quantities = [1, 1, 2, 3, 1, 4, 2, 5, 2, 1, 3, 2]
+    templates = []
 
-    for attempt in range(1, API_MAX_RETRIES + 1):
-        try:
-            response = requests.get(url, timeout=API_TIMEOUT_SECONDS)
-            response.raise_for_status()
-            payload = response.json()
-            if not isinstance(payload, list):
-                raise ValueError(
-                    f"Unexpected payload format for {endpoint} (expected list)."
-                )
-            return payload
-        except (requests.RequestException, ValueError) as exc:
-            last_error = exc
-            if attempt < API_MAX_RETRIES:
-                time.sleep(attempt)
+    for i in range(120):
+        product_count = 1 + (i % 4)
+        products = []
+        for offset in range(product_count):
+            products.append(
+                {
+                    "quantity": base_quantities[(i + offset) % len(base_quantities)]
+                }
+            )
+        templates.append({"products": products})
 
-    raise RuntimeError(f"Failed to fetch {endpoint} from Fake Store API: {last_error}")
+    return templates
 
 
 def _resolve_generation_window(max_existing_order_date: datetime | None) -> tuple[datetime, datetime]:
@@ -55,14 +50,15 @@ def _resolve_generation_window(max_existing_order_date: datetime | None) -> tupl
 
 def load_orders(conn):
     """
-    Fetches carts from Fake Store API and scales order lines into raw.orders_raw.
+    Generates order lines from local cart templates and scales them into
+    raw.orders_raw.
     Incremental behavior: inserts only missing order IDs up to target volume.
     New incremental rows are concentrated in the most recent period so the dataset
     keeps moving forward for dashboard analysis.
     """
-    carts = _fetch_json("/carts")
+    carts = _build_cart_templates()
     if not carts:
-        raise RuntimeError("Carts endpoint returned no records.")
+        raise RuntimeError("Local cart templates returned no records.")
 
     cur = conn.cursor()
     cur.execute("SELECT customer_id FROM raw.customers_raw ORDER BY customer_id")
@@ -117,7 +113,7 @@ def load_orders(conn):
 
         new_orders = target_order_lines - start_index
         print(
-            f"Loading {new_orders} new orders from API templates (rows={existing_orders}, max_id={max_order_number}, target={target_order_lines}, window={generation_start.isoformat()} -> {generation_end.isoformat()})..."
+            f"Loading {new_orders} new orders from local templates (rows={existing_orders}, max_id={max_order_number}, target={target_order_lines}, window={generation_start.isoformat()} -> {generation_end.isoformat()})..."
         )
 
         for i in range(start_index, target_order_lines):

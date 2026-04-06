@@ -47,7 +47,7 @@ def main():
     - Connect to PostgreSQL
     - Ensure RAW tables exist
     - Optionally truncate RAW tables (full refresh mode)
-    - Fetch data from Fake Store API and load into RAW (incremental by default)
+    - Generate deterministic sample data and load into RAW (incremental by default)
     - Verify final counts
     """
     parser = argparse.ArgumentParser(description="Load Fake Store data into PostgreSQL RAW")
@@ -66,7 +66,7 @@ def main():
             "Invalid load mode. Use 'incremental' or 'full_refresh' via --mode or PIPELINE_LOAD_MODE."
         )
 
-    print(f"Starting API-based load into PostgreSQL RAW schema (mode={load_mode})...")
+    print(f"Starting deterministic RAW load into PostgreSQL schema (mode={load_mode})...")
 
     conn = None
     try:
@@ -94,7 +94,7 @@ def main():
         cur.close()
         print("RAW tables ready for load.")
 
-        print("Loading data from Fake Store API...")
+        print("Loading data from local deterministic templates...")
         load_customers(conn)
         load_products(conn)
         load_orders(conn)
