@@ -30,7 +30,7 @@ Most junior analytics portfolios stop at:
 
 - a notebook
 - a SQL script
-- a Power BI file
+- a BI dashboard artifact
 - or a static dashboard
 
 This repository goes further and shows:

@@ -14,15 +14,41 @@ The project started as a reporting portfolio, but I deliberately pushed it towar
 2. PostgreSQL acts as the warehouse landing and reporting store.
 3. dbt builds staging, marts, snapshots, and tests.
 4. FastAPI exposes governed dashboard payloads.
-5. The frontend consumes those payloads and supports navigation, filtering, drilldown, and interactive analysis.
-6. The business layer is not just descriptive. It includes:
+5. The frontend consumes those payloads and supports navigation, filtering, drilldown, source selection, and interactive analysis.
+6. The Data Center window makes source connection choices visible to the user
+   before analysis starts, and local CSV/JSON files can be profiled and mapped
+   inside the product without scripts.
+7. The Source Health window exposes registered source loads, duplicate-key
+   checks, null profiling, and batch metadata so data quality is visible in the
+   product.
+7. The Account Health view combines CRM, billing, support, and ecommerce into a
+   governed operational watchlist for account risk and follow-up priority.
+8. The business layer is not just descriptive. It includes:
    - Sales and revenue comparisons against aligned previous periods.
    - Pareto and ABC analysis to reveal concentration risk.
    - RFM and retention cohort analysis to separate acquisition from quality.
    - Predictive outlook with base, conservative, and upside scenarios.
-7. I also added guided dashboard changes and a semantic layer to show how BI can become more configurable and governed.
+9. I also added guided dashboard changes and a semantic layer to show how BI can become more configurable and governed.
 
 ## Why The Main Features Exist
+
+## How To Describe The Multi-Source Roadmap
+The project currently proves the full analytics lifecycle through a simulated
+ecommerce domain. The planned expansion is to make the ingestion layer broader
+inside the same company analytics story, without turning the project into an
+unfinished universal connector framework.
+
+The right way to explain it:
+
+> The next version extends the same governed workflow across common company data
+> patterns: files, relational tables, CRM, billing, support, marketing, product
+> events, and operational reference tables. Each source still lands in raw, is
+> profiled, cleaned through dbt, exposed through semantic metrics, and validated
+> before dashboard consumption.
+
+The important interview point is disciplined business analysis, not source
+count.
+
 ### Sales Overview
 Reason: topline numbers alone are weak. I needed to show if the result came from order volume, ticket size, or concentration in a few categories.
 
@@ -40,6 +66,20 @@ Reason: leadership usually wants to know whether growth is broad-based or concen
 
 ### Predictive Outlook
 Reason: BI should not only explain the past. This page gives a simple next-step view with forecast, scenario ranges, driver mix, and a watchlist.
+
+### Account Health
+Reason: company analytics usually needs to connect systems, not just report one
+table. This view joins CRM accounts, billing invoices, support tickets, and
+ecommerce activity into one operational watchlist with health score, risk tier,
+outstanding balance, and follow-up driver.
+
+Interview framing:
+
+> I added Account Health as the multi-source proof point. CRM gives ownership
+> and lifecycle, billing shows blocked revenue, support shows customer pressure,
+> and ecommerce gives activity context. The mart is tested in dbt, served by
+> FastAPI, and shown as a visual watchlist so the analysis ends in a decision,
+> not just another table.
 
 ## How To Explain The Harder Decisions Simply
 ### Why add Pareto and ABC?

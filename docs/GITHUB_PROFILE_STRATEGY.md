@@ -37,12 +37,12 @@ Keep it concrete. Examples:
 
 ### English
 
-- Data Analyst focused on SQL, Power BI, Python, and analytics engineering.
+- Data Analyst focused on SQL, Python, BI dashboards, and analytics engineering.
 - BI and Analytics professional building end-to-end reporting and data products.
 
 ### Portuguese
 
-- Analista de Dados com foco em SQL, Power BI, Python e analytics engineering.
+- Analista de Dados com foco em SQL, Python, dashboards BI e analytics engineering.
 - Profissional de BI e Analytics com foco em relatorios, automacao e produtos analiticos.
 
 ## Profile Hygiene Checklist

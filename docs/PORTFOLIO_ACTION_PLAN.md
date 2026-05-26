@@ -10,6 +10,31 @@ also depends on public proof, positioning, and consistency.
 - clearer `nextgen_dashboard/README.md`
 - API smoke tests for the web dashboard
 - project now positioned as end-to-end analytics engineering, not only a final BI report
+- multi-source analytics expansion roadmap in
+  `docs/MULTI_SOURCE_ANALYTICS_ROADMAP.md`
+- registered source ingestion, Source Health, and Account Health are now
+  implemented
+- portfolio screenshots, interactive GIF, and WebM demo are now available in
+  `assets/gallery/`
+
+## Next Technical Expansion
+
+The next highest-value technical direction is not to claim universal ingestion
+or to turn the portfolio into a GTM/prospecting product. It is to add a
+governed multi-source foundation for the company data families analysts most
+often handle: files, relational tables, REST APIs, SaaS-style business
+extracts, events/logs, and operational reference tables.
+
+Recommended first slice:
+
+- add a source registry
+- add CSV and JSON loaders into `raw`
+- store load metadata and profiling output
+- add one dbt staging model for a new source
+- preserve existing ecommerce metrics and dashboard behavior
+
+This keeps the project employability-focused: SQL, Python, dbt, data quality,
+semantic BI, and a clear company analytics workflow.
 
 ## What Only You Can Do
 
@@ -30,19 +55,20 @@ Recommended output:
 
 ### 2. Capture Final Visual Proof
 
-The repository still needs strong visual evidence.
+Status: done for repository-level proof.
 
-Your task:
+Current outputs:
 
-- capture 3 to 5 final screenshots of the web dashboard
-- capture 1 screenshot of dbt docs lineage if available
-- capture 1 screenshot of the Power BI model or report
-- record a 45 to 60 second demo video or GIF
+- screenshots in `assets/gallery/`
+- interactive demo video: `assets/gallery/nextgen-demo.webm`
+- interactive preview GIF: `assets/gallery/nextgen-demo.gif`
+- step captures in `assets/gallery/interactive-steps/`
 
-Recommended output:
+Optional remaining visual proof:
 
-- screenshots in `assets/portfolio/`
-- short demo video for LinkedIn and applications
+- capture dbt docs lineage if you decide to publish dbt docs
+- capture a BI model/report only if you want external BI tooling to be central in
+  the application narrative
 
 ### 3. Update Your Resume
 
@@ -57,7 +83,7 @@ Your task:
 
 Suggested bullets:
 
-- Built an end-to-end analytics platform with Python, PostgreSQL, dbt, FastAPI, and Power BI, simulating 100K+ sales orders across 10K customers and 2K products.
+- Built an end-to-end analytics platform with Python, PostgreSQL, dbt, FastAPI, and a custom BI interface, simulating 100K+ sales orders across 10K customers and 2K products.
 - Developed dbt models, snapshots, SQL quality checks, and operational monitoring views to support reliable BI reporting.
 - Created an API-first multi-page analytics dashboard with period-over-period KPIs, drilldown analysis, and shared filters across business views.
 
@@ -101,7 +127,7 @@ Your task:
   - Product/Data Operations Analyst
 - prioritize companies asking for:
   - SQL
-  - Power BI
+  - Custom BI dashboarding
   - Python
   - ETL or dbt
   - dashboards and stakeholder reporting
@@ -126,8 +152,8 @@ Your task:
 ### Days 1-3
 
 - deploy the app
-- capture screenshots
-- record the demo video
+- verify the published README renders the GIF/video links correctly
+- add the public demo and repository links to CV and LinkedIn
 
 ### Days 4-6
 
@@ -153,3 +179,8 @@ do are:
 - create LinkedIn headline and About options
 - draft application messages for remote jobs and freelance leads
 - improve specific dashboard pages to strengthen the portfolio story
+
+Current application copy is centralized in
+`docs/APPLICATION_MATERIAL.md`.
+
+The short demo walkthrough is centralized in `docs/DEMO_SCRIPT.md`.
