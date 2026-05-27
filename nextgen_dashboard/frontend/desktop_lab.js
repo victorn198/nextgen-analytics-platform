@@ -233,6 +233,7 @@ const state = {
   importedDatasets: [],
   activeConnectorSetup: "",
   localFilePreview: null,
+  desktopIconResizeObserver: null,
   onboarding: {
     dismissed: false,
     tasks: {
@@ -6541,6 +6542,7 @@ function renderDesktop() {
   elements.tasks
     .querySelectorAll("[data-task]")
     .forEach((button) => bindTaskButton(button));
+  layoutDesktopIcons();
   elements.windowsLayer.querySelectorAll(".window").forEach((win) => {
     win
       .querySelector('[data-action="reload"]')
@@ -6608,6 +6610,66 @@ function renderDesktop() {
       );
   });
   syncTasks();
+}
+
+function toPixels(value, fallback = 0) {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function layoutDesktopIcons() {
+  if (!elements.icons) return;
+  const buttons = Array.from(elements.icons.querySelectorAll(".desktop-icon"));
+  if (!buttons.length) return;
+
+  const styles = window.getComputedStyle(elements.icons);
+  const rowGap = toPixels(styles.getPropertyValue("--desktop-icon-gap"), 4);
+  const columnGap = toPixels(
+    styles.getPropertyValue("--desktop-icon-column-gap"),
+    8,
+  );
+  const availableHeight = elements.icons.clientHeight;
+  const availableWidth = elements.icons.clientWidth;
+
+  const measured = buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    return {
+      width: Math.ceil(rect.width || button.offsetWidth || 104),
+      height: Math.ceil(rect.height || button.offsetHeight || 62),
+    };
+  });
+  const iconWidth = Math.max(...measured.map((item) => item.width), 88);
+  const iconHeight = Math.max(...measured.map((item) => item.height), 60);
+
+  const rows = Math.max(
+    1,
+    Math.floor((availableHeight + rowGap) / (iconHeight + rowGap)),
+  );
+  const maxColumns = Math.max(
+    1,
+    Math.floor((availableWidth + columnGap) / (iconWidth + columnGap)),
+  );
+  const neededColumns = Math.ceil(buttons.length / rows);
+  const visibleColumns = Math.min(neededColumns, maxColumns);
+
+  buttons.forEach((button, index) => {
+    const column = Math.floor(index / rows);
+    const row = index % rows;
+    const isInsideDesktop = column < visibleColumns;
+    button.style.transform = `translate(${column * (iconWidth + columnGap)}px, ${row * (iconHeight + rowGap)}px)`;
+    button.style.visibility = isInsideDesktop ? "visible" : "hidden";
+    button.tabIndex = isInsideDesktop ? 0 : -1;
+  });
+}
+
+function bindDesktopIconLayout() {
+  window.addEventListener("resize", layoutDesktopIcons);
+  if (!("ResizeObserver" in window) || !elements.icons) return;
+  state.desktopIconResizeObserver?.disconnect();
+  state.desktopIconResizeObserver = new ResizeObserver(() =>
+    layoutDesktopIcons(),
+  );
+  state.desktopIconResizeObserver.observe(elements.icons);
 }
 
 function applyWindowTheme(themeKey) {
@@ -6749,6 +6811,7 @@ async function init() {
   if (elements.windowTheme) elements.windowTheme.value = state.windowTheme;
   if (elements.scenario) elements.scenario.value = state.filters.scenarioMode;
   renderDesktop();
+  bindDesktopIconLayout();
   renderOnboarding();
   bindLoginScreen();
   bindPointerInteractions();
