@@ -1,12 +1,10 @@
-import os
-
-import psycopg2
+from fivetran_simulator.online_retail import order_rows
+from pipeline_runtime.postgres import connect_postgres_from_env, run_full_refresh
 from dotenv import load_dotenv
 
-from fivetran_simulator.online_retail import order_rows
+import os
 
 load_dotenv()
-
 INSERT_BATCH_SIZE = int(os.getenv("RETAIL_INSERT_BATCH_SIZE", "5000"))
 
 
@@ -41,28 +39,10 @@ def load_orders(conn):
 
 
 if __name__ == "__main__":
-    load_dotenv()
-
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        dbname=os.getenv("POSTGRES_DB", "analytics"),
-        user=os.getenv("POSTGRES_USER", "postgres"),
-        password=os.getenv("POSTGRES_PASSWORD", "postgres"),
-    )
+    conn = connect_postgres_from_env()
 
     try:
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM raw.orders_raw;")
-        conn.commit()
-        cursor.close()
-
-        load_orders(conn)
-
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM raw.orders_raw")
-        print(f"Verification: {cursor.fetchone()[0]} order lines in table.")
-        cursor.close()
+        run_full_refresh(conn, ("raw", "orders_raw"), load_orders, "order lines")
     finally:
         conn.close()
         print("PostgreSQL connection closed.")

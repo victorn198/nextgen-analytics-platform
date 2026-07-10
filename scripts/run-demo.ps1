@@ -55,6 +55,8 @@ if (-not $SkipInstall) {
         & $pythonExe -m pip install --upgrade pip setuptools
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         & $pythonExe -m pip install -r requirements.txt -c constraints.txt
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & $pythonExe -m pip install -r requirements-quality.txt
     }
 }
 

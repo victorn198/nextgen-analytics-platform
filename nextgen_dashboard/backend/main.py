@@ -4,6 +4,7 @@ import logging
 import time
 from collections import OrderedDict
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from datetime import date
 import hmac
 import os
@@ -180,6 +181,57 @@ detail_response_cache: OrderedDict[tuple, tuple[float, DrilldownDetailPayload]] 
 DASHBOARD_CACHE_LIMIT = 48
 DETAIL_CACHE_LIMIT = 96
 CACHE_TTL_SECONDS = int(os.getenv("NEXTGEN_CACHE_TTL_SECONDS", "300"))
+
+
+@dataclass(slots=True)
+class DashboardRequestContext:
+    start_ts: pd.Timestamp
+    end_ts: pd.Timestamp
+    categories: list[str]
+    cities: list[str]
+
+
+def _resolve_dashboard_request_context(
+    start_date: date | None,
+    end_date: date | None,
+    categories: list[str] | None,
+    cities: list[str] | None,
+) -> DashboardRequestContext:
+    try:
+        start_ts, end_ts = repository.validate_date_range(start_date, end_date)
+    except DataSourceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return DashboardRequestContext(
+        start_ts=start_ts,
+        end_ts=end_ts,
+        categories=categories or [],
+        cities=cities or [],
+    )
+
+
+def _load_dashboard_frames(
+    page: PageName,
+    context: DashboardRequestContext,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame | None]:
+    full_df = repository.load_sales_model()
+    full_df.attrs["customer_first_purchase"] = repository.customer_first_purchase()
+    scoped_df = repository.filter_sales(
+        start_date=None,
+        end_date=None,
+        categories=context.categories,
+        cities=context.cities,
+    )
+    if scoped_df.empty:
+        raise HTTPException(status_code=404, detail="No data found for selected filters.")
+
+    current_df = repository.filter_frame_by_date(
+        scoped_df,
+        context.start_ts,
+        context.end_ts,
+    )
+    marketing_df = repository.load_marketing_model() if page == "marketing" else None
+    return full_df, scoped_df, current_df, marketing_df
 
 
 def _dashboard_cache_key(
@@ -517,19 +569,18 @@ def dashboard_detail_endpoint(
     drilldown_key: str = Query(...),
     drilldown_value: str = Query(...),
 ) -> DrilldownDetailPayload:
-    try:
-        start_ts, end_ts = repository.validate_date_range(start_date, end_date)
-    except DataSourceError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    category_values = categories or []
-    city_values = cities or []
+    context = _resolve_dashboard_request_context(
+        start_date,
+        end_date,
+        categories,
+        cities,
+    )
     cache_key = (
         page,
-        pd.Timestamp(start_ts).date().isoformat(),
-        pd.Timestamp(end_ts).date().isoformat(),
-        tuple(sorted(category_values)),
-        tuple(sorted(city_values)),
+        pd.Timestamp(context.start_ts).date().isoformat(),
+        pd.Timestamp(context.end_ts).date().isoformat(),
+        tuple(sorted(context.categories)),
+        tuple(sorted(context.cities)),
         granularity,
         scenario_mode,
         drilldown_key,
@@ -539,26 +590,14 @@ def dashboard_detail_endpoint(
     if cached_payload is not None:
         return cached_payload
 
-    full_df = repository.load_sales_model()
-    full_df.attrs["customer_first_purchase"] = repository.customer_first_purchase()
-    marketing_df = repository.load_marketing_model() if page == "marketing" else None
-    scoped_df = repository.filter_sales(
-        start_date=None,
-        end_date=None,
-        categories=category_values,
-        cities=city_values,
-    )
-    if scoped_df.empty:
-        raise HTTPException(status_code=404, detail="No data found for selected filters.")
-
-    current_df = repository.filter_frame_by_date(scoped_df, start_ts, end_ts)
+    full_df, scoped_df, current_df, _ = _load_dashboard_frames(page, context)
     try:
         payload = dashboard_service.build_detail_payload(
             page=page,
             scoped_df=scoped_df,
             current_df=current_df,
-            start_date=start_ts,
-            end_date=end_ts,
+            start_date=context.start_ts,
+            end_date=context.end_ts,
             granularity=granularity,
             drilldown_key=drilldown_key,
             drilldown_value=drilldown_value,
@@ -583,19 +622,18 @@ def dashboard_endpoint(
     scenario_mode: ScenarioMode = Query(default="Base"),
     drilldown_period_key: str | None = Query(default=None),
 ) -> DashboardPayload:
-    try:
-        start_ts, end_ts = repository.validate_date_range(start_date, end_date)
-    except DataSourceError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    category_values = categories or []
-    city_values = cities or []
+    context = _resolve_dashboard_request_context(
+        start_date,
+        end_date,
+        categories,
+        cities,
+    )
     cache_key = _dashboard_cache_key(
         page=page,
-        start_ts=start_ts,
-        end_ts=end_ts,
-        categories=category_values,
-        cities=city_values,
+        start_ts=context.start_ts,
+        end_ts=context.end_ts,
+        categories=context.categories,
+        cities=context.cities,
         granularity=granularity,
         drilldown_period_key=drilldown_period_key,
         scenario_mode=scenario_mode if page == "predictive" else None,
@@ -604,30 +642,14 @@ def dashboard_endpoint(
     if cached_payload is not None:
         return cached_payload
 
-    full_df = repository.load_sales_model()
-    full_df.attrs["customer_first_purchase"] = repository.customer_first_purchase()
-    marketing_df = repository.load_marketing_model() if page == "marketing" else None
-    scoped_df = repository.filter_sales(
-        start_date=None,
-        end_date=None,
-        categories=category_values,
-        cities=city_values,
-    )
-
-    if scoped_df.empty:
-        raise HTTPException(
-            status_code=404,
-            detail="No data found for selected filters.",
-        )
-
-    current_df = repository.filter_frame_by_date(scoped_df, start_ts, end_ts)
+    full_df, scoped_df, current_df, marketing_df = _load_dashboard_frames(page, context)
 
     if page == "sales" and drilldown_period_key:
         try:
             payload = dashboard_service.build_sales_drilldown_payload(
                 scoped_df=scoped_df,
-                global_start=start_ts,
-                global_end=end_ts,
+                global_start=context.start_ts,
+                global_end=context.end_ts,
                 source_granularity=granularity,
                 period_key=drilldown_period_key,
             )
@@ -643,8 +665,8 @@ def dashboard_endpoint(
         page=page,
         scoped_df=scoped_df,
         current_df=current_df,
-        start_date=start_ts,
-        end_date=end_ts,
+        start_date=context.start_ts,
+        end_date=context.end_ts,
         granularity=granularity,
         full_df=full_df,
         marketing_df=marketing_df,

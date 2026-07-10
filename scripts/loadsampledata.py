@@ -1,9 +1,8 @@
-﻿import os
+import os
 import sys
 import argparse
 from pathlib import Path
 
-import psycopg2
 from dotenv import load_dotenv
 
 # Ensure local package imports work when running from scripts/ path.
@@ -14,6 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from fivetran_simulator.extract_customers import load_customers
 from fivetran_simulator.extract_orders import load_orders
 from fivetran_simulator.extract_products import load_products
+from pipeline_runtime.postgres import connect_postgres_from_env
 
 
 def _ensure_raw_tables(cur):
@@ -71,13 +71,7 @@ def main():
 
     conn = None
     try:
-        conn = psycopg2.connect(
-            host=os.getenv("POSTGRES_HOST", "localhost"),
-            port=int(os.getenv("POSTGRES_PORT", "5432")),
-            dbname=os.getenv("POSTGRES_DB", "analytics"),
-            user=os.getenv("POSTGRES_USER", "postgres"),
-            password=os.getenv("POSTGRES_PASSWORD", "postgres"),
-        )
+        conn = connect_postgres_from_env()
         print("PostgreSQL connection successful.")
 
         cur = conn.cursor()

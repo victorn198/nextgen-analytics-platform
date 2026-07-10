@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from psycopg2.extras import RealDictCursor
 
+from pipeline_runtime.postgres import connect_postgres_from_env
+
 load_dotenv()
 
 logger = logging.getLogger("mcp_tools.security")
@@ -68,13 +70,7 @@ class SQLQuery(BaseModel):
 
 def get_postgres_connection():
     try:
-        return psycopg2.connect(
-            host=os.getenv("POSTGRES_HOST", "localhost"),
-            port=int(os.getenv("POSTGRES_PORT", "5432")),
-            dbname=os.getenv("POSTGRES_DB", "analytics"),
-            user=os.getenv("POSTGRES_USER", "postgres"),
-            password=os.getenv("POSTGRES_PASSWORD", "postgres"),
-        )
+        return connect_postgres_from_env()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to connect to PostgreSQL: {exc}") from exc
 

@@ -26,6 +26,7 @@ Invoke-QualityCheck "Running Python tests" { & $pythonExe -m pytest tests }
 Invoke-QualityCheck "Checking dashboard JavaScript" { node --check nextgen_dashboard/frontend/app.js }
 Invoke-QualityCheck "Auditing dashboard metrics" { & $pythonExe scripts/audit_dashboard_metrics.py --summary-only }
 Invoke-QualityCheck "Benchmarking dashboard routes" { & $pythonExe scripts/benchmark_dashboard.py --threshold-seconds 1.50 }
+Invoke-QualityCheck "Checking maintainability budgets" { & $pythonExe scripts/quality_budget.py }
 
 if ($IncludeWarehouse) {
     if (-not (Test-Path "dbtproject/profiles.yml")) {

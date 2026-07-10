@@ -13,8 +13,9 @@ from uuid import uuid4
 
 import psycopg2
 import yaml
-from dotenv import load_dotenv
 from psycopg2 import sql
+
+from pipeline_runtime.postgres import connect_postgres_from_env
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -485,14 +486,7 @@ def _row_hash(row: dict[str, Any], columns: tuple[str, ...]) -> str:
 
 
 def _connect_from_env():
-    load_dotenv()
-    return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        dbname=os.getenv("POSTGRES_DB", "analytics"),
-        user=os.getenv("POSTGRES_USER", "postgres"),
-        password=os.getenv("POSTGRES_PASSWORD", "postgres"),
-    )
+    return connect_postgres_from_env()
 
 
 def parse_args() -> argparse.Namespace:

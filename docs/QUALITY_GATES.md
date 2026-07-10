@@ -11,8 +11,8 @@ Run:
 .\scripts\verify-portfolio.ps1
 ```
 
-This runs the application tests, frontend syntax check, KPI audit, and route
-benchmark. It covers:
+This runs the application tests, frontend syntax check, KPI audit, route
+benchmark, and maintainability budget. It covers:
 
 - root and health endpoints
 - filter metadata
@@ -21,7 +21,26 @@ benchmark. It covers:
 - proposal workflow
 - governed drilldowns
 
-## 2. Frontend Syntax
+## 2. Maintainability Budget
+
+Run:
+
+```powershell
+python scripts/quality_budget.py
+npx --yes jscpd@4.0.5 nextgen_dashboard fivetran_simulator mcp_tools scripts pipeline_runtime --min-lines 8 --min-tokens 60 --format python,javascript --ignore "**/__pycache__/**,**/agent_data/**" --threshold 1
+```
+
+The CI budget enforces Python modules under 1,900 lines and cyclomatic
+complexity at or below 30. The legacy dashboard audit page routine has a
+documented temporary budget of 55 because it coordinates independent business
+checks; its exception is explicit in `scripts/quality_budget.py` rather than
+silently ignored. Duplication must remain below 1% under the same JSCPD scan.
+
+The Python test suite also runs with coverage and requires at least 40% over
+the dashboard, pipeline, simulator, MCP, and shared runtime packages. This is
+a floor, not a claim that every integration path is fully covered.
+
+## 3. Frontend Syntax
 
 Run:
 
@@ -31,7 +50,7 @@ node --check nextgen_dashboard/frontend/app.js
 
 This is the minimum guard for JS changes.
 
-## 3. Dashboard Metric Audit
+## 4. Dashboard Metric Audit
 
 Run:
 
@@ -49,7 +68,7 @@ This audit cross-checks KPI math and payload consistency across:
 
 It exits non-zero when any contract breaks, so it is safe to use in CI.
 
-## 4. Dashboard Benchmark
+## 5. Dashboard Benchmark
 
 Run:
 
@@ -70,7 +89,7 @@ By default it measures:
 - `products`
 - `operations`
 
-## 5. dbt / Warehouse Gate
+## 6. dbt / Warehouse Gate
 
 When changing pipeline logic or marts:
 
@@ -85,7 +104,7 @@ dbt test
 The GitHub Actions workflow repeats the complete PostgreSQL load, dbt build,
 and application verification on every pull request and push to `main`.
 
-## 6. Manual Smoke
+## 7. Manual Smoke
 
 Before calling a UI change complete:
 
@@ -111,7 +130,10 @@ Before exposing the app beyond localhost:
 A meaningful change should not be merged unless:
 
 - tests pass
+- coverage remains at or above the configured floor
 - syntax checks pass
+- complexity, module-size, and duplication budgets pass
+- dependency audit has no known vulnerabilities
 - benchmark stays within threshold
 - the change remains explainable in business terms
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 
@@ -18,6 +18,11 @@ from .analytics_helpers import (
     period_bounds_from_key,
     range_with_previous,
     safe_pct,
+)
+from .dashboard_charts import (
+    build_breakdown_chart as _build_breakdown_chart,
+    build_pareto_breakdown_chart as _pareto_breakdown_payload,
+    group_metric_map as _group_metric_map,
 )
 from .models import (
     BreakdownChartPayload,
@@ -49,6 +54,7 @@ from .predictive_analytics import (
     scenario_series_name,
 )
 from .revenue import RevenueService
+from .retention_analytics import build_retention_snapshot as _build_retention_snapshot
 from .semantic_layer import SemanticLayer
 from .statistical_analytics import (
     annotate_trend_anomalies,
@@ -57,9 +63,6 @@ from .statistical_analytics import (
     build_rfm_segment_summary,
     detect_structural_shifts,
 )
-
-MetricFn = Callable[[pd.DataFrame], float]
-
 
 def _sum_sales(df: pd.DataFrame) -> float:
     return float(df["sales_amount"].sum()) if not df.empty else 0.0
@@ -218,15 +221,6 @@ def _select_closed_month_history(
     return current_df.copy(), start_ts, end_ts, False
 
 
-def _last_closed_cohort_month(end_date: pd.Timestamp) -> pd.Timestamp | None:
-    end_ts = pd.Timestamp(end_date).normalize()
-    cohort_month = _month_start(end_ts)
-    month_end = cohort_month + pd.offsets.MonthEnd(0)
-    if end_ts < month_end:
-        cohort_month = cohort_month - pd.DateOffset(months=1)
-    return pd.Timestamp(cohort_month).normalize()
-
-
 def _scenario_case_label(scenario_mode: ScenarioMode) -> str:
     if scenario_mode == "Conservative":
         return "conservative case"
@@ -248,63 +242,6 @@ def _scenario_pick(
     return float(base_value)
 
 
-def _group_metric_map(df: pd.DataFrame, group_col: str, metric_fn: MetricFn) -> dict[str, float]:
-    if df.empty or group_col not in df.columns:
-        return {}
-    payload: dict[str, float] = {}
-    scoped = df.dropna(subset=[group_col])
-    for raw_label, frame in scoped.groupby(group_col, sort=False):
-        payload[str(raw_label)] = float(metric_fn(frame))
-    return payload
-
-
-def _build_breakdown_chart(
-    title: str,
-    x_title: str,
-    y_title: str,
-    current_df: pd.DataFrame,
-    previous_df: pd.DataFrame,
-    group_col: str,
-    metric_fn: MetricFn,
-    metric_format: str,
-    limit: int = 6,
-    current_trace_style: str = "bar",
-    previous_trace_style: str = "bar",
-    label_transform: Callable[[str], str] | None = None,
-    filter_key: str | None = None,
-) -> BreakdownChartPayload | None:
-    current_map = _group_metric_map(current_df, group_col, metric_fn)
-    previous_map = _group_metric_map(previous_df, group_col, metric_fn)
-    labels = sorted(
-        set(current_map) | set(previous_map),
-        key=lambda label: (current_map.get(label, 0.0), previous_map.get(label, 0.0)),
-        reverse=True,
-    )[:limit]
-    if not labels:
-        return None
-
-    points = [
-        BreakdownPoint(
-            label=label_transform(label) if label_transform else label,
-            raw_label=label,
-            current_value=float(current_map.get(label, 0.0)),
-            previous_value=float(previous_map.get(label, 0.0)),
-            delta_pct=safe_pct(current_map.get(label, 0.0), previous_map.get(label, 0.0)),
-        )
-        for label in labels
-    ]
-    return BreakdownChartPayload(
-        title=title,
-        x_title=x_title,
-        y_title=y_title,
-        metric_format=metric_format,
-        current_trace_style=current_trace_style,
-        previous_trace_style=previous_trace_style,
-        filter_key=filter_key if filter_key in {"category", "city"} else None,
-        points=points,
-    )
-
-
 def _table_payload(title: str, columns: list[tuple[str, str]], rows: list[dict[str, Any]]) -> DetailTablePayload | None:
     if not rows:
         return None
@@ -324,163 +261,6 @@ def _table_payload(title: str, columns: list[tuple[str, str]], rows: list[dict[s
         columns=[TableColumn(key=key, label=label) for key, label in columns],
         rows=table_rows,
     )
-
-
-def _pareto_breakdown_payload(
-    title: str,
-    x_title: str,
-    y_title: str,
-    current_df: pd.DataFrame,
-    previous_df: pd.DataFrame,
-    group_col: str,
-    metric_format: str,
-    limit: int = 8,
-    label_transform: Callable[[str], str] | None = None,
-    filter_key: str | None = None,
-    interaction_type: str | None = None,
-    interaction_key: str | None = None,
-    interaction_label: str | None = None,
-) -> BreakdownChartPayload | None:
-    points = build_pareto_points(
-        current_df=current_df,
-        previous_df=previous_df,
-        group_col=group_col,
-        limit=limit,
-        label_transform=label_transform,
-    )
-    if not points:
-        return None
-    return BreakdownChartPayload(
-        title=title,
-        x_title=x_title,
-        y_title=y_title,
-        metric_format=metric_format,
-        analysis_mode="pareto",
-        current_series_name="Current Net Sales",
-        cumulative_series_name="Cumulative Share",
-        cumulative_y_title="Cumulative Share",
-        current_trace_style="bar",
-        filter_key=filter_key if filter_key in {"category", "city"} else None,
-        interaction_type=interaction_type,
-        interaction_key=interaction_key,
-        interaction_label=interaction_label,
-        points=points,
-    )
-
-
-def _empty_retention_snapshot(max_age: int) -> dict[str, Any]:
-    return {
-        "heatmap": None,
-        "cohort_sizes": pd.Series(dtype="float64"),
-        "counts": pd.DataFrame(columns=list(range(max_age + 1))),
-        "latest_full_cohort_size": 0.0,
-        "retention": {age: 0.0 for age in range(1, min(max_age, 3) + 1)},
-        "curve": {age: 0.0 for age in range(max_age + 1)},
-        "detail_rows": [],
-        "cohort_start": None,
-        "cohort_end": None,
-    }
-
-
-def _build_retention_snapshot(
-    scoped_df: pd.DataFrame,
-    start_date: pd.Timestamp,
-    end_date: pd.Timestamp,
-    max_age: int = 6,
-) -> dict[str, Any]:
-    activity = scoped_df.dropna(subset=["customer_id", "order_day"])[["customer_id", "order_day"]].copy()
-    if activity.empty:
-        return _empty_retention_snapshot(max_age)
-
-    activity["order_month"] = activity["order_day"].dt.to_period("M").dt.to_timestamp()
-    activity = activity.drop_duplicates(subset=["customer_id", "order_month"])
-    cohort_map = activity.groupby("customer_id")["order_month"].min()
-    activity["cohort_month"] = activity["customer_id"].map(cohort_map)
-
-    cohort_start = _month_start(start_date)
-    cohort_end = _month_start(end_date)
-    activity = activity[(activity["cohort_month"] >= cohort_start) & (activity["cohort_month"] <= cohort_end) & (activity["order_month"] <= cohort_end)].copy()
-    if activity.empty:
-        snapshot = _empty_retention_snapshot(max_age)
-        snapshot["cohort_start"] = cohort_start
-        snapshot["cohort_end"] = cohort_end
-        return snapshot
-
-    activity["cohort_age"] = ((activity["order_month"].dt.year - activity["cohort_month"].dt.year) * 12 + (activity["order_month"].dt.month - activity["cohort_month"].dt.month))
-    activity = activity[(activity["cohort_age"] >= 0) & (activity["cohort_age"] <= max_age)]
-    if activity.empty:
-        snapshot = _empty_retention_snapshot(max_age)
-        snapshot["cohort_start"] = cohort_start
-        snapshot["cohort_end"] = cohort_end
-        return snapshot
-
-    cohort_sizes = (activity[activity["cohort_age"] == 0].groupby("cohort_month")["customer_id"].nunique().sort_index().astype(float))
-    if cohort_sizes.empty:
-        snapshot = _empty_retention_snapshot(max_age)
-        snapshot["cohort_start"] = cohort_start
-        snapshot["cohort_end"] = cohort_end
-        return snapshot
-
-    counts = (activity.groupby(["cohort_month", "cohort_age"])["customer_id"].nunique().unstack(fill_value=0).reindex(index=cohort_sizes.index, columns=list(range(max_age + 1)), fill_value=0).astype(float))
-
-    def weighted_retention(age: int) -> float:
-        eligible = [cohort for cohort in cohort_sizes.index if cohort + pd.DateOffset(months=age) <= cohort_end]
-        if not eligible:
-            return 0.0
-        denom = float(cohort_sizes.loc[eligible].sum())
-        numer = float(counts.loc[eligible, age].sum())
-        return (numer / denom * 100.0) if denom else 0.0
-
-    curve = {age: (100.0 if age == 0 else weighted_retention(age)) for age in range(max_age + 1)}
-    retention = {age: weighted_retention(age) for age in range(1, min(max_age, 3) + 1)}
-
-    latest_full_month = _last_closed_cohort_month(end_date)
-    latest_full_size = 0.0
-    if latest_full_month is not None and latest_full_month in cohort_sizes.index:
-        latest_full_size = float(cohort_sizes.loc[latest_full_month])
-
-    x_labels = [f"M{age}" for age in range(max_age + 1)]
-    y_labels: list[str] = []
-    z_values: list[list[float | None]] = []
-    detail_rows: list[dict[str, str]] = []
-
-    for cohort in sorted(cohort_sizes.index.tolist(), reverse=True):
-        cohort_size = float(cohort_sizes.loc[cohort])
-        y_labels.append(pd.Timestamp(cohort).strftime("%b %Y"))
-        row_values: list[float | None] = []
-        for age in range(max_age + 1):
-            mature = cohort + pd.DateOffset(months=age) <= cohort_end
-            if not mature:
-                row_values.append(None)
-                continue
-            numer = float(counts.loc[cohort, age])
-            row_values.append((numer / cohort_size * 100.0) if cohort_size else 0.0)
-        z_values.append(row_values)
-        detail_rows.append({
-            "cohort": pd.Timestamp(cohort).strftime("%b %Y"),
-            "size": fmt_number(cohort_size),
-            "m1": fmt_pct(row_values[1]) if row_values[1] is not None else "-",
-            "m2": fmt_pct(row_values[2]) if row_values[2] is not None else "-",
-            "m3": fmt_pct(row_values[3]) if row_values[3] is not None else "-",
-        })
-
-    return {
-        "heatmap": HeatmapPayload(
-            title="Retention Cohort Heatmap",
-            x_labels=x_labels,
-            y_labels=y_labels,
-            z_values=z_values,
-            metric_format="percent",
-        ),
-        "cohort_sizes": cohort_sizes,
-        "counts": counts,
-        "latest_full_cohort_size": latest_full_size,
-        "retention": retention,
-        "curve": curve,
-        "detail_rows": detail_rows[:6],
-        "cohort_start": cohort_start,
-        "cohort_end": cohort_end,
-    }
 
 
 def _campaigns_in_window(

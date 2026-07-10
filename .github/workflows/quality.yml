@@ -52,6 +52,7 @@ jobs:
           cache-dependency-path: |
             requirements.txt
             constraints.txt
+            requirements-quality.txt
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
@@ -62,6 +63,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools
           pip install -r requirements.txt -c constraints.txt
+          pip install -r requirements-quality.txt
 
       - name: Configure dbt profile
         run: cp dbtproject/profiles.yml.example dbtproject/profiles.yml
@@ -91,8 +93,16 @@ jobs:
         env:
           NEXTGEN_SKIP_PREWARM: "1"
         run: |
-          python -m pytest tests
+          python -m pytest tests --cov=nextgen_dashboard --cov=fivetran_simulator --cov=mcp_tools --cov=pipeline_runtime --cov-report=term-missing --cov-fail-under=40
           node --check nextgen_dashboard/frontend/app.js
+
+      - name: Enforce maintainability budgets
+        run: |
+          python scripts/quality_budget.py
+          npx --yes jscpd@4.0.5 nextgen_dashboard fivetran_simulator mcp_tools scripts pipeline_runtime --min-lines 8 --min-tokens 60 --format python,javascript --ignore "**/__pycache__/**,**/agent_data/**" --threshold 1
+
+      - name: Audit runtime dependencies
+        run: pip-audit -r requirements.txt --no-deps
 
       - name: Audit dashboard metrics
         run: python scripts/audit_dashboard_metrics.py --summary-only
