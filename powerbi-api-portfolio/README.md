@@ -13,7 +13,9 @@ GitHub Search API -> Python ingestion -> PostgreSQL -> analytical SQL view -> Po
 
 The default query collects the 100 most relevant public repositories for
 `topic:data-engineering stars:>100`. The report exposes the collected evidence,
-not manually entered KPI values.
+not manually entered KPI values. It is organized as an executive overview, a
+market-demand comparison and an opportunity queue, with a clickable lateral
+page navigator.
 
 ## What it demonstrates
 
@@ -55,6 +57,7 @@ powerbi/OpenSourceLandscape/      source-controlled PBIP project
 powerbi/screenshots/              verified report preview
 scripts/run-all.ps1               one-command orchestration
 scripts/generate_pbip.mjs         deterministic PBIP generator
+scripts/add-business-navigation.mjs business pages and lateral navigation
 src/ingest_github.py              GitHub API ingestion
 sql/001_schema.sql                database schema
 sql/002_powerbi_view.sql          analytical view

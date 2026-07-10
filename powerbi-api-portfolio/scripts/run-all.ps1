@@ -14,6 +14,9 @@ if ($LASTEXITCODE -ne 0) { throw "Data pipeline failed." }
 node "scripts\generate_pbip.mjs"
 if ($LASTEXITCODE -ne 0) { throw "PBIP generation failed." }
 
+node "scripts\add-business-navigation.mjs"
+if ($LASTEXITCODE -ne 0) { throw "Business navigation generation failed." }
+
 $reportPath = "powerbi\OpenSourceLandscape\OpenSourceLandscape.Report"
 if (Get-Command powerbi-report-author -ErrorAction SilentlyContinue) {
     & powerbi-report-author validate $reportPath

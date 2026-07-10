@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
-  "name": "7a9c20e5d8414f6b93c1",
-  "displayName": "Executive Overview",
+  "name": "9c1e42a7f0635b8d15e3",
+  "displayName": "Opportunity Queue",
   "displayOption": "FitToPage",
   "height": 1080,
   "width": 1920,
