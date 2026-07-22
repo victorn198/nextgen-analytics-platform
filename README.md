@@ -1,208 +1,110 @@
-# Data Pipeline Portfolio
+<h1 align="center">NextGen Analytics Platform</h1>
 
-![Social preview](./assets/social-preview.png)
+<p align="center">
+  An end-to-end analytics engineering platform that turns fragmented commercial and operational signals into account, revenue, retention, and data-quality decisions.
+</p>
 
-Desktop-first analytics engineering portfolio built with `Python`,
-`PostgreSQL`, `dbt`, `FastAPI`, and a custom BI product layer.
+<p align="center">
+  <a href="https://victorn198.github.io/data-pipeline-portfolio/"><strong>Open interactive product tour</strong></a>
+  · <a href="README.pt.md">Português</a>
+  · <a href="assets/gallery/nextgen-demo.webm">90-second walkthrough</a>
+  · <a href="docs/DEMO_SCRIPT.md">Demo script</a>
+</p>
 
-This repository is meant to be read like a case study. It shows the full
-analytics lifecycle: ingestion, warehouse modeling, tests, monitoring,
-semantic definitions, API delivery, and an interactive analytics interface.
+<p align="center">
+  <a href="https://github.com/victorn198/data-pipeline-portfolio/actions/workflows/dbt_run.yml"><img alt="Pipeline quality" src="https://github.com/victorn198/data-pipeline-portfolio/actions/workflows/dbt_run.yml/badge.svg"></a>
+  <img alt="Python" src="https://img.shields.io/badge/Python-analytics-3776AB?logo=python&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-warehouse-4169E1?logo=postgresql&logoColor=white">
+  <img alt="dbt" src="https://img.shields.io/badge/dbt-modeling-FF694B?logo=dbt&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-semantic%20API-009688?logo=fastapi&logoColor=white">
+</p>
 
-## TL;DR
+![NextGen analytics product](./assets/social-preview.png)
 
-- `100,000` real retail transaction lines from a governed UCI Online Retail sample,
-  with `4,000+` customers and `3,000+` products
-- `dbt` warehouse with marts, tests, and snapshot modeling
-- FastAPI analytics backend plus a desktop-style BI interface
-- business analysis methods beyond topline dashboards:
-  - executive KPI scorecard
-  - Pareto / `ABC`
-  - `RFM`
-  - retention cohorts
-  - marketing efficiency / `ROAS`
-  - anomaly and structural shift detection
-  - forecast scenarios
-- product-style investigation features:
-  - `Data Center`
-  - `Spotlight`
-  - `Compare`
-  - `Bookmarks`
-  - `Recent`
-  - `Action Board`
-- source reliability view:
-  - in-app source selection and local CSV/JSON preview
-  - automatic file profiling, dataset classification, mapping suggestions, and an isolated `Imported Dataset` preview window
-  - latest registered source loads
-  - duplicate-key and null profiling
-  - batch metadata surfaced in the analytics desktop
-- account health view:
-  - CRM, billing, support, and ecommerce signals joined into one mart
-  - governed watchlist for risk tier, open tickets, and outstanding balance
+## The business challenge
 
-## What This Repository Demonstrates
+Revenue alone does not explain which accounts require attention. Commercial teams need to combine billing exposure, support pressure, customer activity, and purchasing behavior without losing metric governance or source traceability.
 
-- ingestion into a `raw` layer
-- consolidated canonical retail dataset with derived customers, products, and
-  order lines from the same source
-- registered CSV/JSON/API-style source ingestion with load metadata and profiling
-- no-code local file intake in the app: CSV/JSON parsing, column profiling, suggested mappings, and preview analysis before governed promotion
-- warehouse modeling with `dbt`
-- data quality testing and monitoring objects
-- semantic KPI definitions for BI
-- API-first analytics delivery
-- a desktop-first analytics UX instead of a static dashboard
+NextGen provides an investigation workflow that answers:
 
-## Gallery
+- Which accounts need attention now, and which signal created the priority?
+- Where are revenue and product concentration creating commercial risk?
+- Are source failures or quality issues affecting trusted metrics?
+- Can an analyst move from an executive signal to the underlying account or record?
 
-<img src="./assets/gallery/nextgen-demo.gif" alt="Short NextGen analytics desktop demo" width="900">
+## Strongest decision workflow: Account Health
 
-Interactive recording file: [nextgen-demo.webm](./assets/gallery/nextgen-demo.webm)
+![Account Health watchlist](./assets/gallery/desktop-account-health.png)
 
-<img src="./assets/gallery/desktop-home-compact.png" alt="NextGen desktop analytics shell in a compact browser viewport" width="900">
+The Account Health mart combines CRM, billing, support, and ecommerce signals into an explainable watchlist. Users can identify the account, inspect the reason for risk, compare context, and register a follow-up action.
 
-<img src="./assets/gallery/desktop-workflow.png" alt="Layered investigation workflow with Sales Overview, Predictive Outlook, and Account Health" width="900">
+This is the main portfolio narrative: **signal -> responsible account -> contributing evidence -> next action**.
 
-<img src="./assets/gallery/desktop-source-health.png" alt="Source Health registered-source quality and load monitoring view" width="900">
+## Product experience
 
-<img src="./assets/gallery/desktop-account-health.png" alt="Account Health multi-source operations view inside the desktop analytics shell" width="900">
+<p align="center">
+  <img src="./assets/gallery/desktop-sales-overview.png" width="49%" alt="Revenue and product analysis">
+  <img src="./assets/gallery/desktop-source-health.png" width="49%" alt="Source health and data quality">
+</p>
 
-Account Health case:
-
-- [Account Health Case Study](./docs/ACCOUNT_HEALTH_CASE_STUDY.md)
-- [Demo Script](./docs/DEMO_SCRIPT.md)
-- dbt mart: `dbtproject/models/marts/mart_account_health.sql`
-- API endpoint: `GET /api/account-health`
+- **Revenue and product decisions:** net sales, Pareto/ABC, ticket, retention, and commercial concentration.
+- **Source Health:** registered loads, duplicate keys, null profiling, and promotion readiness.
+- **Investigation tools:** Spotlight, Compare, Bookmarks, Recent activity, and Action Board.
+- **Governed intake:** isolated CSV/JSON preview and profiling before a source can affect certified KPIs.
 
 ## Architecture
 
-<img src="./assets/diagrams/architecture-overview.png" alt="NextGen analytics architecture overview" width="900">
-
-## Warehouse View
-
-<img src="./assets/diagrams/warehouse-model.png" alt="Warehouse model and database layers derived from the repository structure" width="900">
-
-The warehouse visual above is repository-derived, not a live PostgreSQL GUI
-capture. That choice keeps the structure visible even when the local database
-is offline.
-
-## Analytics Methods Included
-
-- aligned period-over-period comparisons
-- net versus gross sales separation with cancellation visibility
-- campaign spend, attributed revenue and `ROAS`
-- Pareto and `ABC` concentration analysis
-- `RFM` customer segmentation
-- retention cohort analysis
-- anomaly and structural shift detection
-- predictive scenarios: `Base`, `Conservative`, `Upside`
-- drilldowns from business slice to underlying members
-
-## Product Features Included
-
-- desktop-style navigation with windows and taskbar
-- `Data Center` window with a connector library, source toggles, connection drafts, and no-code local CSV/JSON import analysis
-- `Imported Dataset` preview window with quality cards, suggested mapping, auto view, column profile, and sample rows isolated from official KPIs
-- `Spotlight` windows with local filters and frozen context
-- `Compare` windows for side-by-side investigation
-- `Bookmarks` to restore saved workspaces
-- `Recent` activity and `Action Board`
-- CSV export from detail and comparison views
-- window design themes inside the desktop shell
-- `Executive Scorecard` and `Marketing Efficiency` windows for certified KPI review and campaign ROAS analysis
-- `Source Health` window for registered-source audit and profiling results
-- `Account Health` window for company operations and customer risk follow-up
-
-## Quick Start
-
-### Prerequisites
-
-- Python `3.10+`
-- Docker Desktop or local PostgreSQL
-
-### Run locally
-
-```bash
-docker compose up -d
-cp .env.example .env
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-python -m pip install --upgrade pip setuptools
-pip install -r requirements.txt -c constraints.txt
-python scripts/loadsampledata.py --mode full_refresh
-python scripts/load_registered_sources.py
-cd dbtproject
-dbt deps
-dbt run --full-refresh
-dbt snapshot
-dbt test
-cd ..
-uvicorn nextgen_dashboard.backend.main:app --reload --port 8601
+```mermaid
+flowchart LR
+    A[Retail CSV and API fixtures] --> B[Python ingestion and profiling]
+    B --> C[(PostgreSQL raw layer)]
+    C --> D[dbt staging, snapshots, and marts]
+    D --> E[Semantic metric contracts]
+    E --> F[FastAPI]
+    F --> G[Desktop analytics interface]
+    D --> H[dbt tests and monitoring]
 ```
 
-Open `http://127.0.0.1:8601`
+Orders, CRM, billing, support, and marketing data are modeled at explicit grains. dbt tests and snapshots protect the path from raw ingestion to decision-ready marts.
 
-## Quality and Security
+Explore the [architecture](./docs/ARCHITECTURE.md), [data lineage](./docs/DATA_LINEAGE.md), [dbt models](./docs/DBT_MODELS.md), and [metric dictionary](./docs/MEASURE_DICTIONARY.md).
 
-```bash
-python -m pip install --upgrade pip setuptools
-pip install -r requirements.txt -c constraints.txt
-pytest tests/test_nextgen_dashboard_api.py
-python scripts/benchmark_dashboard.py --threshold-seconds 1.50
+## Engineering evidence
+
+- 100,000 public retail transaction lines with governed raw, staging, mart, and semantic layers.
+- PostgreSQL warehouse modeled and tested with dbt, including snapshots.
+- Multi-source account-health mart across CRM, billing, support, and ecommerce fixtures.
+- FastAPI contracts for certified analytics delivery.
+- Automated API tests, metric audit, dbt tests, and dashboard performance benchmark.
+- Security controls for CORS, mutations, tokens, asset access, and atomic governed-state writes.
+- Reproducible Windows launcher for environment setup, warehouse build, tests, and demo startup.
+
+## Run locally
+
+### Fastest Windows path
+
+```powershell
+git clone https://github.com/victorn198/data-pipeline-portfolio.git
+cd data-pipeline-portfolio
+.\scripts\run-demo.ps1
 ```
 
-Current hardening in the repo:
+Prerequisites: Python 3.10+ and Docker Desktop or local PostgreSQL. The launcher creates the environment, starts PostgreSQL, loads sources, builds and tests dbt models, and opens the Account Health walkthrough.
 
-- explicit CORS origins
-- agent mutations disabled by default
-- token-gated mutations when enabled
-- static asset allowlist
-- atomic local writes for governed state
+For manual setup and validation commands, see [Deployment](./docs/DEPLOYMENT.md) and [Quality Gates](./docs/QUALITY_GATES.md).
 
-See:
+## Data disclosure
 
-- [AI Agent Security](./docs/AI_AGENT_SECURITY.md)
-- [Quality Gates](./docs/QUALITY_GATES.md)
-- [SECURITY.md](./SECURITY.md)
+The ecommerce layer uses a public UCI Online Retail sample. CRM, billing, support, and marketing records are synthetic fixtures created for this case. No client data is included.
 
-## AI Collaboration
+## AI collaboration
 
-I used AI during implementation and review, and I keep that explicit.
+AI assisted repetitive implementation, refactoring, testing, documentation, and review. Business framing, metric definitions, acceptance criteria, and final validation remained human decisions. See the full [AI collaboration disclosure](./docs/AI_COLLABORATION_DISCLOSURE.md).
 
-AI helped with:
+## Portfolio references
 
-- repetitive implementation work
-- UI iteration
-- refactoring and cleanup
-- test expansion
-- documentation drafting
-- security review support
-
-AI did not own product direction, business framing, acceptance criteria, or
-final review. Those decisions remained manual.
-
-More detail: [AI Collaboration Disclosure](./docs/AI_COLLABORATION_DISCLOSURE.md)
-
-## Repository Guide
-
-- `fivetran_simulator/`: ingestion simulators and scaled sample generation
-- `fivetran_simulator/source_registry.yml`: governed file-source contracts
-- `dbtproject/models/`: warehouse transformations
-- `dbtproject/tests/`: SQL quality checks
-- `nextgen_dashboard/`: FastAPI backend and desktop-first frontend
-- `scripts/setup_*.sql`: monitoring and operational SQL objects
-- `scripts/benchmark_dashboard.py`: dashboard performance regression check
-- `assets/gallery/`: real project screenshots and demo captures
-- `assets/diagrams/`: architecture and warehouse visuals
-
-## Useful Docs
-
-- [GitHub Repository Setup](./docs/GITHUB_REPOSITORY_SETUP.md)
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Data Lineage](./docs/DATA_LINEAGE.md)
-- [Multi-Source Analytics Roadmap](./docs/MULTI_SOURCE_ANALYTICS_ROADMAP.md)
-- [Business Source Decision](./docs/BUSINESS_SOURCE_DECISION.md)
-- [dbt Models](./docs/DBT_MODELS.md)
-- [Measure Dictionary](./docs/MEASURE_DICTIONARY.md)
-- [Predictive Outlook Method](./docs/PREDICTIVE_OUTLOOK_METHOD.md)
-- [Statistical Analytics Stack](./docs/STATISTICAL_ANALYTICS_STACK.md)
+- [Account Health case study](./docs/ACCOUNT_HEALTH_CASE_STUDY.md)
+- [Project interview narrative](./docs/PROJECT_INTERVIEW_NARRATIVE.md)
+- [Predictive outlook method](./docs/PREDICTIVE_OUTLOOK_METHOD.md)
+- [Statistical analytics stack](./docs/STATISTICAL_ANALYTICS_STACK.md)
+- [Security](./SECURITY.md)
