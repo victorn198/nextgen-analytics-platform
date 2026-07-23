@@ -11,7 +11,7 @@
 
 ```bash
 git clone <your-repo-url>
-cd data-pipeline-portfolio
+cd nextgen-analytics-platform
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 python -m pip install --upgrade pip setuptools

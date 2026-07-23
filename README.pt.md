@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://victorn198.github.io/data-pipeline-portfolio/"><strong>Abrir tour interativo</strong></a>
+  <a href="https://victorn198.github.io/nextgen-analytics-platform/"><strong>Abrir tour interativo</strong></a>
   · <a href="README.md">English</a>
   · <a href="assets/gallery/nextgen-demo.webm">Vídeo de 90 segundos</a>
   · <a href="docs/DEMO_SCRIPT.md">Roteiro da demonstração</a>
@@ -74,8 +74,8 @@ Consulte [arquitetura](./docs/ARCHITECTURE.md), [linhagem](./docs/DATA_LINEAGE.m
 ## Executar localmente
 
 ```powershell
-git clone https://github.com/victorn198/data-pipeline-portfolio.git
-cd data-pipeline-portfolio
+git clone https://github.com/victorn198/nextgen-analytics-platform.git
+cd nextgen-analytics-platform
 .\scripts\run-demo.ps1
 ```
 

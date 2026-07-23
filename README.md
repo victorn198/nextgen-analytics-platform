@@ -5,14 +5,14 @@
 </p>
 
 <p align="center">
-  <a href="https://victorn198.github.io/data-pipeline-portfolio/"><strong>Open interactive product tour</strong></a>
+  <a href="https://victorn198.github.io/nextgen-analytics-platform/"><strong>Open interactive product tour</strong></a>
   · <a href="README.pt.md">Português</a>
   · <a href="assets/gallery/nextgen-demo.webm">90-second walkthrough</a>
   · <a href="docs/DEMO_SCRIPT.md">Demo script</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/victorn198/data-pipeline-portfolio/actions/workflows/dbt_run.yml"><img alt="Pipeline quality" src="https://github.com/victorn198/data-pipeline-portfolio/actions/workflows/dbt_run.yml/badge.svg"></a>
+  <a href="https://github.com/victorn198/nextgen-analytics-platform/actions/workflows/dbt_run.yml"><img alt="Pipeline quality" src="https://github.com/victorn198/nextgen-analytics-platform/actions/workflows/dbt_run.yml/badge.svg"></a>
   <img alt="Python" src="https://img.shields.io/badge/Python-analytics-3776AB?logo=python&logoColor=white">
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-warehouse-4169E1?logo=postgresql&logoColor=white">
   <img alt="dbt" src="https://img.shields.io/badge/dbt-modeling-FF694B?logo=dbt&logoColor=white">
@@ -84,8 +84,8 @@ Explore the [architecture](./docs/ARCHITECTURE.md), [data lineage](./docs/DATA_L
 ### Fastest Windows path
 
 ```powershell
-git clone https://github.com/victorn198/data-pipeline-portfolio.git
-cd data-pipeline-portfolio
+git clone https://github.com/victorn198/nextgen-analytics-platform.git
+cd nextgen-analytics-platform
 .\scripts\run-demo.ps1
 ```
 

@@ -4,7 +4,7 @@ Use this file to finish the public portfolio presentation on GitHub.
 
 ## Recommended Repository Name
 
-`data-pipeline-portfolio`
+`nextgen-analytics-platform`
 
 ## Recommended Description
 
